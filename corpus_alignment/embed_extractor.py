@@ -8,7 +8,7 @@ Created on Sat Oct  5 20:37:13 2019
 
 import os
 import sys
-os.environ['LASER'] = '/home/plxiv/LASER/LASER-master/'
+os.environ['LASER'] = '/home/usuaris/veu/adria.de.jorge/LASER/'
 LASER = os.environ['LASER']
 sys.path.append(LASER + 'source/')
 sys.path.append(LASER + '/source/lib')
@@ -17,8 +17,9 @@ from embed import SentenceEncoder, EncodeFile, EmbedLoad
 import tempfile
 
 
-def extract(encoder, token_lang, bpe_codes, ifname, output, remove= False , verbose = False):
+def extract(encoder, token_lang, bpe_codes, ifname, output , verbose = False):
     with tempfile.TemporaryDirectory() as tmpdir:
+        print(tmpdir)
 #        ifname = ''  
         if token_lang != '--':
             tok_fname = os.path.join(tmpdir, 'tok')

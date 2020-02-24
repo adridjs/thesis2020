@@ -12,8 +12,9 @@ from storage_modules import store_sentences
 from preprocess import preprocess
 from embed_extractor import extract, generate_encoder
 from parallel_extractor import mine
-os.environ['LASER'] = '/home/plxiv/LASER/LASER-master/'
+os.environ['LASER'] = '/home/usuaris/veu/adria.de.jorge/LASER/'
 LASER = os.environ['LASER']
+
 
 def find_file(folder, target):
     files = os.listdir(folder)
@@ -23,21 +24,23 @@ def find_file(folder, target):
             results = filename
     return results
 
+
 def obtain_all_filenames(corpus_folder, languages):
     dict_files = {}
     for i in languages:
         dict_files[i] = os.listdir(corpus_folder + i  + '/raw/')
     return dict_files
 
+
 def extract_filenames(dict_filenames, corpus_folder, person, list_languages):
     names = {}
     if person in dict_filenames['en']:
         names['en'] = corpus_folder + 'en' + '/raw/' + person
         for lan_p in list_languages:
-            fn = lan_p[1].split(' – ')[0]
-            if fn in dict_filenames[lan_p[0]]:
-                names[lan_p[0]] = corpus_folder + lan_p[0] + '/raw/' +  fn
+            if lan_p in dict_filenames:
+                names[lan_p] = corpus_folder + lan_p + '/raw/' + person
     return names
+
 
 def remove_tmp(languages):
     for i in languages:
@@ -47,12 +50,14 @@ def remove_tmp(languages):
         except:
             pass
 
+
 def extract_candidate_sentences(languages, names, encoder, bpe_codes, parallel_file, threshold):
     sel_par_sentences= []
     all_embeds = []
     for lan in languages:
         preprocess(lan, names[lan])
-        all_embeds.append(extract(encoder, lan, bpe_codes, 'preprocessed/' + lan, 'embeds/' + str(lan), remove= True, verbose = False))
+        print()
+        all_embeds.append(extract(encoder, lan, bpe_codes, 'preprocessed/' + lan, 'embeds/' + str(lan), verbose = False))
     for lan in languages:
         all_par_sentences = mine('preprocessed/' + languages[0], 
                                  'preprocessed/' + lan, 
@@ -67,6 +72,7 @@ def extract_candidate_sentences(languages, names, encoder, bpe_codes, parallel_f
     remove_tmp(languages)
     return sel_par_sentences
 
+
 def compare_sentences(lan_1, lan_2):
     same_lan = [i[1] for i in lan_2]
     update = []
@@ -75,6 +81,7 @@ def compare_sentences(lan_1, lan_2):
             lan_1[i].append(lan_2[same_lan.index(sentence[0])][2])
             update.append(lan_1[i])
     return update
+
 
 def find_parallel_sentences(sel_par_sentences):
     try:
@@ -85,12 +92,29 @@ def find_parallel_sentences(sel_par_sentences):
         parrallel_sentences = []
     return parrallel_sentences        
 
-def run(encoder, corpus_folder, names, languages, threshold = 1.055):
+
+def run(encoder, names, languages, threshold = 1.055):
     bpe_codes = LASER + 'models/93langs.fcodes'  
     parallel_tmp = 'parallel.txt'
     sel_par_sentences = extract_candidate_sentences(languages, names, encoder, bpe_codes, parallel_tmp, threshold)   
     par = find_parallel_sentences(sel_par_sentences)
     return par
+
+
+def get_names_in_all_languages(corpus_folder, languages):
+    names = dict()
+    for lang in languages:
+        names[lang] = list()
+        for filename in os.listdir(f'{corpus_folder}/{lang}/raw/'):
+            names[lang].append(filename)
+
+    names_list = list(names.items())
+    ordered_names = sorted(names_list, key=lambda x: len(x[1]), reverse=True)
+    _, max_names = ordered_names.pop(0)
+    names_all_langs = [name for lang, names in ordered_names
+                       for name in names if name in max_names]
+
+    return names_all_langs
 
 def retrieve_args():
     parser = argparse.ArgumentParser(description='Generates a pickle in which contains the dictionary of the samples in which all languages have the same entry')
@@ -98,7 +122,7 @@ def retrieve_args():
     parser.add_argument('-f','--folder', required=True, help='root folder where the extracted corpus is stored')
     parser.add_argument('-p','--pickle', required=True, help='pickle that contains the people selection')
     parser.add_argument('-s','--save_path', required=False, help='Folder where the sentences will be stored', default='results/')
-    parser.add_argument('-e','--encoder', required=False, help='path to the LASER encoder', default='/home/plxiv/LASER/LASER-master/models/bilstm.93langs.2018-12-26.pt')
+    parser.add_argument('-e','--encoder', required=False, help='path to the LASER encoder', default='/home/usuaris/veu/adria.de.jorge/LASER/models/bilstm.93langs.2018-12-26.pt')
     args = parser.parse_args()
     return args
 
@@ -111,11 +135,12 @@ def main():
     encoder = generate_encoder(encoder_file)
     with open(args.pickle, 'rb') as f:
         people = pickle.load(f)
-    dict_filenames =  obtain_all_filenames(corpus_folder, languages)
-    for person, list_languages in people.items():
-        names = extract_filenames(dict_filenames, corpus_folder, person, list_languages)
+    dict_filenames = obtain_all_filenames(corpus_folder, languages)
+    for person in people:
+        names = extract_filenames(dict_filenames, corpus_folder, person, languages)
         if len(names.keys()) == len(languages):
-            sentences = run(encoder, corpus_folder, names, languages)
+            print(person)
+            sentences = run(encoder, names, languages)
             if sentences:
                 store_sentences(sentences, names, languages, results_folder, person)
     

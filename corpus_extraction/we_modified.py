@@ -2948,7 +2948,9 @@ def process_dump(input_file, template_file, out_file, file_size, file_compress,
     reduce.start()
 
     page_num = 0
-    for page_data in pages_from(input):
+    for n, page_data in enumerate(pages_from(input)):
+        if n % 500 == 0:
+                print(n)
         id, revid, title, ns, catSet, page = page_data
 #        if keepPage(ns, catSet, page):
         if title in options.filter_category_include and '(' not in title:
