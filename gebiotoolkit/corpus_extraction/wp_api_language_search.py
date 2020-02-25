@@ -13,13 +13,15 @@ import wikipedia
 import argparse
 import time
 
+
 def retrieve_args():
     parser = argparse.ArgumentParser(description='Finds the different languages available for an specific wikipedia article')
-    parser.add_argument('-v','--vr_number', required=False, help='virtual machine assigned. Must be lower than the total number of virtual machines', default= '1')
-    parser.add_argument('-t','--total', required=False, help='total of processes created', default='1')
-    parser.add_argument('-c','--csv', required=False, help='folder which contains names of living people', default='csv/dF7mxWq4.csv')
+    parser.add_argument('-v', '--vr_number', required=False, help='virtual machine assigned. Must be lower than the total number of virtual machines', default= '1')
+    parser.add_argument('-t', '--total', required=False, help='total of processes created', default='1')
+    parser.add_argument('-c', '--csv', required=False, help='folder which contains names of living people', default='csv/dF7mxWq4.csv')
     args = parser.parse_args()
     return args
+
 
 def main():
     args = retrieve_args()
@@ -28,7 +30,7 @@ def main():
 
     initial_time = time.time()
 
-    df=pd.read_csv(args.csv, sep=',',header=None)
+    df = pd.read_csv(args.csv, sep=',',header=None)
     all_p = []
     for person in df.values[1:,1]:
         person = person.replace("\\",'')
@@ -40,10 +42,11 @@ def main():
     else:
         ini = fold_size*vr_number
 
-    call_api(vr_number, all_p[ini:ini+fold_size])
+    call_api(all_p[ini:ini+fold_size])
     print(time.time() - initial_time)
 
-def call_api(cpu, names):
+
+def call_api(names):
     counter = 0
     for i in names:
         t_sample = time.time()
@@ -58,6 +61,7 @@ def call_api(cpu, names):
                 number_of_tries += 1
         counter +=1
         print(str((t_sample - time.time(), counter, i, links)) + '\n' , flush=True)
+
 
 if __name__ == '__main__':
     main()

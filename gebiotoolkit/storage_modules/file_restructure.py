@@ -12,6 +12,7 @@ from urllib.request import urlopen
 
 import wikipedia
 from bs4 import BeautifulSoup
+from wikipedia import PageError
 
 
 def id_retriever(name, lan):
@@ -42,9 +43,12 @@ def include_sentence(sens):
     return valid_sentence, name[:len(name) - 1]
 
 
-def store_sentence(filestore, name, all_sentences, lan, gender):
+def store_sentences(filestore, name, all_sentences, lan, gender):
     seg = 1
-    idd = id_retriever(name, lan)
+    try:
+        idd = id_retriever(name, lan)
+    except PageError:
+        idd = None
     filestore.write(f'<doc docid="{name}" wpid="{idd}" language="{lan}" gender="{gender}">\n')
     filestore.write(f'<title>{name}</title>\n')
 

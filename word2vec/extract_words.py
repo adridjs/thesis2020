@@ -1,13 +1,13 @@
 import re
 import argparse
-from collections import Counter
+from collections import defaultdict
 
 from nltk.corpus import stopwords
 
-from gebiotoolkit.storage_modules.file_restructure import id_retriever, include_sentence, store_sentence
+from gebiotoolkit.storage_modules.file_restructure import include_sentence, store_sentences
 
 STOP_WORDS = set(stopwords.words('english'))
-GENDERS = ['he', 'she']
+GENDERS = {'he', 'she'}
 
 
 def get_words(txt):
@@ -25,34 +25,42 @@ def parse_sentence_words(folder, languages):
     :param languages:
     :return:
     """
-
-    unique = Counter({f'{lang}-{gender}' for lang in languages for gender in GENDERS})
-    sentences = Counter({f'{lang}-{gender}' for lang in languages for gender in GENDERS})
-
-    sentence_words = []
-    for file_name in _get_filenames(folder, languages=languages):
+    sentence_words = defaultdict(list)
+    for file_name, out_file_name in zip(*_get_filenames(folder, languages=languages)):
         lang, gender = file_name.split('/')[-1].split('_')
         gender = gender.split('.')[0]
 
-        for line in open(file_name):
+        out_file = open(out_file_name, 'w+')
+        person_sentences_list = list()
+        for n, line in enumerate(open(file_name)):
             line = line.strip().lower()
-            line, name = include_sentence(line)
-            wid = id_retriever(name, lang)
-            sent_words = get_words(line)
-            if len(sent_words) > 1:
-                unique.update({f'{lang}-{gender}': 1})
-                # store_sentence()
-                sentence_words.append(sent_words)
+            line, current_name = include_sentence(line)
+            if n == 0:
+                last_name = current_name
 
+            if current_name != last_name:
+                store_sentences(out_file, last_name, person_sentences_list, lang, gender)
+                last_name = current_name
+                person_sentences_list = list()
+
+            person_sentence_line = get_words(line)
+            if len(person_sentence_line) > 1:
+                person_sentences_list.append(person_sentence_line)
+                sentence_words[f'{lang}-{gender}'].append((current_name, person_sentence_line))
+
+        out_file.close()
+
+    print(f'Unique sentences for each combination of {languages} x {GENDERS} ')
     return sentence_words
 
 
 def _get_filenames(folder, languages):
-
     filenames = []
+    out_filenames = []
     filenames.extend([f'{folder}/{lang}_{gender}.txt' for lang in languages for gender in GENDERS])
+    out_filenames.extend([f'{folder}/{lang}_{gender}.filtered.txt' for lang in languages for gender in GENDERS])
 
-    return filenames
+    return filenames, out_filenames
 
 
 def retrieve_args():
@@ -75,3 +83,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+"""In order to process files from folder 'word2vec/biographies' -l en es"""
