@@ -5,9 +5,10 @@ from collections import defaultdict
 from nltk.corpus import stopwords
 
 from gebiotoolkit.storage_modules.file_restructure import include_sentence, store_sentences
+from utils.constants import GENDERS, LANGUAGES
+
 
 STOP_WORDS = set(stopwords.words('english'))
-GENDERS = {'he', 'she'}
 
 
 def get_words(txt):
@@ -67,7 +68,7 @@ def retrieve_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-f,""--corpus_folder", dest='corpus_folder', help="paths to corpus data", default='../corpus_alignment/aligned/')
     parser.add_argument("-t", "--threshold", dest='threshold', help="threshold allowed ", default=1.5)
-    parser.add_argument("-l", "--langs", dest='langs', nargs='+', help="langs in which the filter will be performed")
+    parser.add_argument("-l", "--langs", dest='langs', nargs='+', help="white-spaced languages you want to process the data on")
 
     return parser.parse_args()
 
@@ -75,9 +76,12 @@ def retrieve_args():
 def main():
     args = retrieve_args()
     corpus_folder = args.corpus_folder
-    langs = args.langs
+    languages = args.langs
 
-    biography_sentences = parse_sentence_words(corpus_folder, langs)
+    if not args.langs:
+        languages = LANGUAGES
+
+    biography_sentences = parse_sentence_words(corpus_folder, languages)
     print('\n'.join(map(str, biography_sentences[:10])))
 
 
