@@ -47,7 +47,7 @@ def store_sentences(filestore, name, all_sentences, lan, gender):
     seg = 1
     try:
         idd = id_retriever(name, lan)
-    except PageError:
+    except:
         idd = None
     filestore.write(f'<doc docid="{name}" wpid="{idd}" language="{lan}" gender="{gender}">\n')
     filestore.write(f'<title>{name}</title>\n')
