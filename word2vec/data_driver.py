@@ -2,12 +2,12 @@ import argparse
 import os
 import random
 import re
-import sys
 from collections import defaultdict
+import sys
 
 import spacy
 
-sys.path.append(os.environ.get('HOME'))
+sys.path.append(".")
 from utils.constants import GENDERS, LANGUAGES, STOP_WORDS, NLP_MODELS
 from utils.regexp import RegExp
 from gebiotoolkit.storage_modules.file_restructure import include_sentence, store_sentences
