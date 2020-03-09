@@ -1,9 +1,14 @@
 import argparse
+import os
 import random
 import re
+import sys
 from collections import defaultdict
 
-from utils.constants import GENDERS, LANGUAGES, STOP_WORDS
+import spacy
+
+sys.path.append(os.environ.get('HOME'))
+from utils.constants import GENDERS, LANGUAGES, STOP_WORDS, NLP_MODELS
 from utils.regexp import RegExp
 from gebiotoolkit.storage_modules.file_restructure import include_sentence, store_sentences
 
@@ -22,25 +27,40 @@ class DataDriver:
         self.languages = languages or LANGUAGES
         self.genders = genders or GENDERS
         self.re = RegExp()
+        self.nlp_model_mapping = NLP_MODELS
 
     @staticmethod
-    def _remove_stopwords(txt):
-        return list(filter(
-            lambda x: x not in STOP_WORDS,
-            re.findall(r'\b(\w+)\b', txt)
-        ))
+    def _clean_sentence(model, txt):
+        return model(txt).doc.text_with_ws.split()
+
+    def _load_model(self, language):
+        """
+        Load spacy model based on :param language. This was created in order to have only one model loaded at a time, as some spacy models are huge.
+        :param language: The language in which to retrieve the spacy's model name.
+        :type language: str
+        :return:
+        """
+        try:
+            model_name = self.nlp_model_mapping[language]
+        except KeyError:
+            raise ValueError(f'Could not get a mapping between the language specified {language} and a model name. Check that you have it set at'
+                             f' NLP_MODELS constant.')
+
+        return spacy.load(model_name)
 
     def _get_filenames(self):
         """
-        Helper function to retrieve filenames based on :param languages and :param genders key sets.
-        :return:
+        Helper function to retrieve input and output filenames based on :param languages and :param genders key sets.
+        :return: An iterator of triples following (key, filename, out_filename)
+        :rtype: tuple
         """
-        filenames = []
-        out_filenames = []
-        filenames.extend([f'{self.corpus_folder}/{lang}_{gender}.txt' for lang in self.languages for gender in GENDERS])
-        out_filenames.extend([f'{self.corpus_folder}/{lang}_{gender}.filtered.txt' for lang in self.languages for gender in GENDERS])
 
-        return filenames, out_filenames
+        for lang in self.languages:
+            for gender in GENDERS:
+                key = f'{lang}_{gender}'
+                filename = f'{self.corpus_folder}/{key}.txt'
+                out_filename = f'{self.corpus_folder}/{key}.filtered.txt'
+                yield key, filename, out_filename
 
     def _parse_filtered_docs(self):
         """
@@ -111,10 +131,10 @@ class DataDriver:
         Each sublist is a sentence.
         :return:
         """
-        for file_name, out_file_name in zip(*self._get_filenames()):
+        for key, file_name, out_file_name in self._get_filenames():
             lang, gender = file_name.split('/')[-1].split('_')
             gender = gender.split('.')[0]
-
+            model = self._load_model(lang)
             out_file = open(out_file_name, 'w+')
             person_sentences_list = list()
             for n, line in enumerate(open(file_name)):
@@ -128,7 +148,7 @@ class DataDriver:
                     last_name = current_name
                     person_sentences_list = list()
 
-                person_sentence_line = self._remove_stopwords(line)
+                person_sentence_line = self._clean_sentence(model, line)
                 if len(person_sentence_line) > 1:
                     person_sentences_list.append(person_sentence_line)
 
@@ -137,8 +157,8 @@ class DataDriver:
 
 def retrieve_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f,""--corpus_folder", dest='corpus_folder', help="paths to corpus data", default='../corpus_alignment/aligned/')
-    parser.add_argument("-l", "--langs", dest='langs', nargs='+', help="white-spaced languages you want to process the data on")
+    parser.add_argument("-f,""--corpus_folder", dest='corpus_folder', help="paths to corpus data", default='biographies')
+    parser.add_argument("-l", "--languages", dest='languages', nargs='+', help="white-spaced languages you want to process the data on")
 
     return parser.parse_args()
 
