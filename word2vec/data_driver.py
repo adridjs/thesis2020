@@ -1,5 +1,4 @@
 import argparse
-import os
 import random
 import re
 from collections import defaultdict
@@ -73,7 +72,7 @@ class DataDriver:
         for lang in self.languages:
             for gender in self.genders:
                 key = f'{lang}_{gender}'
-                filename = f'{self.corpus_folder}{key}.filtered.txt'
+                filename = f'{self.corpus_folder}/{key}.filtered.txt'
                 with open(filename, 'r') as f:
                     lines = ' '.join(f.readlines())
                     for n, doc in enumerate(re.finditer(self.re.doc_wise, lines, re.UNICODE)):

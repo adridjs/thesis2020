@@ -10,10 +10,13 @@ bs4==0.0.1
 cachetools==4.0.0
 catalogue==1.0.0
 certifi==2019.11.28
+cffi==1.14.0
 chardet==3.0.4
 cycler==0.10.0
 cymem==2.0.3
 docutils==0.15.2
+en-core-web-sm==2.2.5
+es-core-news-sm==2.2.5
 faiss-cpu==1.6.1
 fastBPE==0.1.0
 gast==0.2.2
@@ -48,6 +51,7 @@ preshed==3.0.2
 protobuf==3.11.3
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
+pycparser==2.20
 pyparsing==2.4.6
 python-dateutil==2.8.1
 pytz==2019.3
