@@ -13,7 +13,7 @@ class Word2VecSettings:
     def __init__(self, languages, kwargs):
         self.save_binary = kwargs.get('save_binary', False)
         self.min_count = kwargs.get('min_count', 5)
-        self.model_filename = kwargs.get('model_filename', f'biographies_word2vec_{self.min_count}')
+        self.model_filename = kwargs.get('model_filename', f'word2vec/biographies_word2vec_{self.min_count}')
         self.input_folder = kwargs.get('input_folder', 'biographies/')
 
 
@@ -31,13 +31,13 @@ class Word2VecTrainer:
         self.data_driver = DataDriver(self.settings.input_folder, languages)
 
     def train(self):
-        dataset = self.data_driver.get_balanced_dataset()
-        joint_genders_dataset = [sentence for key_based in dataset.values() for sentence in key_based]
-        model = Word2Vec(sentences=joint_genders_dataset, size=self.n_dim, min_count=self.settings.min_count)
-        model.build_vocab()
+        self.data_driver.get_balanced_dataset()
+        joint_genders_dataset = [sentence for key_based in self.data_driver.balanced_dataset.values() for sentence in key_based]
+        model = Word2Vec(size=self.n_dim, min_count=self.settings.min_count)
 
+        model.build_vocab(joint_genders_dataset)
         # train model
-        model.train(epochs=self.epochs)
+        model.train(joint_genders_dataset, total_examples=model.corpus_count, epochs=self.epochs)
 
         # save vectors
         model.wv.save_word2vec_format(f'{self.settings.model_filename}.txt', binary=False)

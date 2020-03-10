@@ -93,36 +93,31 @@ class DataDriver:
         :param least_docs_value: least number of documents in the whole data set
         :return:
         """
-        balanced_dataset = defaultdict(list)
+        self.balanced_dataset = defaultdict(list)
         for lang in self.languages:
             for gender in GENDERS:
                 key = f'{lang}_{gender}'
                 length = len(docs[key])
                 n_delete = length - least_docs_value
                 if n_delete == 0:
-                    balanced_dataset[key] = docs[key]
+                    self.balanced_dataset[key] = docs[key]
                     continue
 
                 print(f'Number of docs for gender: {gender} in language: {lang} -> {length}')
                 print(f'Randomly deleting {n_delete} documents to have a uniform distribution between genders: {lang} -> {length}')
                 sample = random.sample(docs[key], least_docs_value)
-                balanced_dataset[key] = sample
-
-        return balanced_dataset
+                self.balanced_dataset[key] = sample
 
     def get_balanced_dataset(self):
         """
         Retrieves documents matching the :param languages and :param genders key sets.
-        :return:
         """
         # Get docs to quantify how many he/she instances exist in each language.
         docs, (least_docs_key, least_docs_value) = self._parse_filtered_docs()
         print(f'Key with least documents ({least_docs_value}): {least_docs_key}')
 
         # Balance dataset based on least_docs_val.
-        dataset = self._balance_dataset(docs, least_docs_value=least_docs_value)
-
-        return dataset
+        self._balance_dataset(docs, least_docs_value=least_docs_value)
 
     def save_xml(self):
         """
@@ -172,6 +167,7 @@ def main():
     # Generate files *.{filtered}.txt
     dd.save_xml()
     dd.get_balanced_dataset()
+    print(f'{key}: {sentences[:10]}\n' for key, sentences in dd.balanced_dataset.items())
 
 
 if __name__ == '__main__':

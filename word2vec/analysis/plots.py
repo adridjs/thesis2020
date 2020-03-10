@@ -13,23 +13,14 @@ def load_embeddings(embeddings_filename, normalize=True, binary=False):
     return embeddings
 
 
-def get_gender_vector(embeddings):
-    guy = embeddings['guy']
-    girl = embeddings['girl']
-
-    gender_vector = guy - girl
-
-    return gender_vector
-
-
-def plot_gendered_vectors(gendered_vectors, threshold=None):
+def plot_gendered_vectors(gendered_vectors, pair=None, threshold=None):
     output_file("line.html")
     if threshold:
         words, values = zip(*list(filter(lambda x: abs(x[1]) > threshold, gendered_vectors)))
     else:
         words, values = zip(*gendered_vectors)
 
-    p = figure(x_range=words, y_range=(-1, 1))
+    p = figure(title=f'{pair}', x_range=words, y_range=(-1, 1))
     p.xaxis.major_label_orientation = np.pi / 4
     p.vbar(x=words, bottom=0, top=values, width=0.2)
 
@@ -37,14 +28,22 @@ def plot_gendered_vectors(gendered_vectors, threshold=None):
 
 
 if __name__ == '__main__':
-    embs = load_embeddings('biographies_word2vec_5.txt')
-    gen_vec = get_gender_vector(embs)
+    embs = load_embeddings('word2vec/biographies_word2vec_5.txt')
 
-    # cos(u,v) =u·v / ‖u‖‖v‖
-    # cos(w1, w2) = w1·w2 if embeddings are normalized between
-    tokens = embs.keys()
-    cos_similarity = [(word, np.dot(embs[word], gen_vec)) for word in tokens]
+    # definitional pairs
+    pairs = [('he', 'she'), ('father', 'mother'), ('his', 'her'), ('man', 'woman'), ('boy', 'girl')]
 
-    gendered_words = sorted(cos_similarity, key=lambda x: x[1])
-    for th in [0.1, 0.2, 0.3, 0.4, 0.45]:
-        plot_gendered_vectors(gendered_words, threshold=th)
+    # Based on arxiv:1903.03862v2
+    for masc, fem in pairs:
+        gender_vector = embs[masc] - embs[fem]
+        # cos(u,v) =u·v / ‖u‖‖v‖
+        # cos(w1, w2) = w1·w2 if embeddings are normalized between
+        tokens = embs.keys()
+        cos_similarity = [(word, np.dot(embs[word], gender_vector)) for word in tokens]
+
+        gendered_words = sorted(cos_similarity, key=lambda x: x[1])
+        for th in [0.2, 0.4]:
+            try:
+                plot_gendered_vectors(gendered_words, pair=(masc, fem), threshold=th)
+            except ValueError:
+                pass
