@@ -19,8 +19,14 @@ If we want to change the domain of gebiotoolkit, we need to generate new files a
 
     python3 wp_api_language_search.py -csv new_list.csv 
 
+We can also extract page files by giving a `$NAMELIST_FILE` to the WikiExtractor, together with the `$WIKIDUMP_PATH`
+ and an `$OUTPUT_PATH`.  
 
-
+    python 3 we_modified.py \
+    $WIKIDUMP_PATH  \
+    -o $OUTPUT_PATH \
+    --filter_category $NAMELIST_FILE \
+    -l
 
 ## References
 
