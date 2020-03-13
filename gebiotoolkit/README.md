@@ -27,7 +27,14 @@ We can also extract page files by giving a `$NAMELIST_FILE` to the WikiExtractor
     -o $OUTPUT_PATH \
     --filter_category $NAMELIST_FILE \
     -l
-
+    
+Number of names in english and spanish, respectively.
+```
+cat en_namelist.txt | wc -l
+33604
+cat es_namelist.txt | wc -l
+31373
+```
 ## References
 
 For more information, please check https://arxiv.org/pdf/1912.04778.pdf
