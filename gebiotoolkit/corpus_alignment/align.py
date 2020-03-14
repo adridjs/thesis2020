@@ -31,7 +31,7 @@ def get_person_filenames_by_language(corpus_folder, person, list_languages):
     """
     person_filenames = {}
     for lan_p in list_languages:
-        person_filenames[lan_p] = corpus_folder + lan_p + '/raw/' + person
+        person_filenames[lan_p] = corpus_folder + '/' + lan_p + '/raw/' + person
     return person_filenames
 
 
