@@ -29,6 +29,7 @@ def plot_gendered_vectors(gendered_vectors, pair=None, threshold=None):
 
 if __name__ == '__main__':
     embs = load_embeddings('word2vec/biographies_word2vec_5.txt')
+    print(f'Vocabulary size: {len(embs)}')
 
     # definitional pairs
     pairs = [('he', 'she'), ('father', 'mother'), ('his', 'her'), ('man', 'woman'), ('boy', 'girl')]
@@ -38,11 +39,13 @@ if __name__ == '__main__':
         gender_vector = embs[masc] - embs[fem]
         # cos(u,v) =u·v / ‖u‖‖v‖
         # cos(w1, w2) = w1·w2 if embeddings are normalized between
-        tokens = embs.keys()
-        cos_similarity = [(word, np.dot(embs[word], gender_vector)) for word in tokens]
+        professions = list(map(str.strip, open('word2vec/professions.txt').readlines()))
+        profession_embeddings = {token: emb for token, emb in embs.items() if token in professions}
+        print(f'Number of professions in vocabulary: {len(profession_embeddings)}')
+        cos_similarity = [(word, np.dot(embs[word], gender_vector)) for word in profession_embeddings]
 
         gendered_words = sorted(cos_similarity, key=lambda x: x[1])
-        for th in [0.2, 0.4]:
+        for th in [0.05, 0.1, 0.15, 0.2]:
             try:
                 plot_gendered_vectors(gendered_words, pair=(masc, fem), threshold=th)
             except ValueError:

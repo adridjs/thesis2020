@@ -35,6 +35,11 @@ cat en_namelist.txt | wc -l
 cat es_namelist.txt | wc -l
 31373
 ```
+
+Number of names that appear in both namelists.
+```
+24675
+```
 ## References
 
 For more information, please check https://arxiv.org/pdf/1912.04778.pdf

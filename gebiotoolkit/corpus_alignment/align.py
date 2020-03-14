@@ -27,7 +27,7 @@ def find_file(folder, target):
     return results
 
 
-def obtain_all_filenames(corpus_folder, languages):
+def obtain_wiki_files(corpus_folder, languages):
     dict_files = {}
     for i in languages:
         dict_files[i] = os.listdir(corpus_folder + i  + '/raw/')
@@ -112,10 +112,12 @@ def get_names_in_all_languages(corpus_folder, languages):
 
     names_list = list(names.items())
     ordered_names = sorted(names_list, key=lambda x: len(x[1]), reverse=True)
-    _, max_names = ordered_names.pop(0)
+    lang, max_names = ordered_names.pop(0)
+    print(f'Language with maximum names -> {lang} ({len(max_names)})')
     names_all_langs = [name for lang, names in ordered_names
                        for name in names if name in max_names]
 
+    print(f'Names in all languages -> {len(names_all_langs)}')
     return names_all_langs
 
 
@@ -123,8 +125,8 @@ def retrieve_args():
     parser = argparse.ArgumentParser(description='Generates a pickle in which contains the dictionary of the samples in which all languages have '
                                                  'the same entry')
     parser.add_argument('-l','--languages', nargs='+', required=True, help='Languages in which the parallel sentences will be generated')
-    parser.add_argument('-f','--folder', required=True, help='root folder where the extracted corpus is stored')
-    parser.add_argument('-p','--pickle', required=True, help='pickle that contains the people selection')
+    parser.add_argument('-f','--folder', help='folder where the extracted corpus from wikipedia dumps is located',
+                        default='gebiotoolkit/corpus_extraction/wiki/')
     parser.add_argument('-s','--save_path', required=False, help='Folder where the sentences will be stored', default='aligned/')
     parser.add_argument('-e','--encoder', required=False, help='path to the LASER encoder',
                         default=f'{LASER}/models/bilstm.93langs.2018-12-26.pt')
@@ -138,10 +140,11 @@ def main():
     languages = args.languages
     results_folder = args.save_path
     encoder_file = args.encoder
+
     encoder = generate_encoder(encoder_file)
     with open(args.pickle, 'rb') as f:
         people = pickle.load(f)
-    dict_filenames = obtain_all_filenames(corpus_folder, languages)
+    dict_filenames = obtain_wiki_files(corpus_folder, languages)
     for person in people:
         names = extract_filenames(dict_filenames, corpus_folder, person, languages)
         if len(names.keys()) == len(languages):
