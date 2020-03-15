@@ -81,12 +81,12 @@ def extract_candidate_sentences(languages, person_filenames, encoder, threshold)
                                  languages[0], lan,
                                  f'{tmp_embeds_fn}/{languages[0]}', f'{tmp_embeds_fn}/{lan}',
                                  output_file, 'mine')
-        if parallel_sentences:
-            for i, par in enumerate(parallel_sentences):
-                if float(par[0]) < threshold:
-                    invalid_upper_bound = i
-                    break
-            candidate_sentences.append(parallel_sentences[:invalid_upper_bound])
+        for parallel_sentence in parallel_sentences:
+            if float(parallel_sentence[0]) > threshold:
+                candidate_sentences.append(parallel_sentence)
+            else:
+                break
+
     remove_tmp(languages)
     return candidate_sentences
 
