@@ -11,8 +11,7 @@ import nltk.data
 
 def preprocess(outputfile, filename):
     tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
-    tmp = 'tmp_preprocess/'
-    write = open(tmp + outputfile, 'a')
+    write = open(outputfile, 'a')
     with open(filename, 'r') as f:
         a = f.readlines()
     for i in range(3,len(a)-1):

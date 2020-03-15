@@ -70,7 +70,7 @@ def extract_candidate_sentences(languages, person_filenames, encoder, threshold)
     candidate_sentences = []
     all_embeds = []
     for lan in languages:
-        preprocess(lan, person_filenames[lan])
+        preprocess(f'{tmp_preprocess_fn}/{lan}', person_filenames[lan])
         all_embeds.append(extract(encoder, lan, bpe_codes, f'{tmp_preprocess_fn}/{lan}', f'{tmp_embeds_fn}/{lan}', verbose=True))
 
     for lan in languages:
