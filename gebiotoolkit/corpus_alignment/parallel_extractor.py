@@ -22,6 +22,7 @@ def mine(src, trg, src_lang, trg_lang, src_embeddings, trg_embeddings, output, m
         for i, j in enumerate(parallel):
             parallel[i] = j.split('\t')
         os.remove(output)
-    except:
+    except Exception as e:
+        print(e)
         parallel = []
     return parallel
