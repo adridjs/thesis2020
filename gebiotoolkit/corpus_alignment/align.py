@@ -63,12 +63,13 @@ def extract_candidate_sentences(languages, person_filenames, encoder, threshold)
     :param threshold:
     :return:
     """
-    parallel_file = 'parallel.tmp'
     bpe_codes = LASER + 'models/93langs.fcodes'
+    output_file = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/parallel.tmp'  # parallel sentences will be stored here
     tmp_preprocess_fn = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/tmp_preprocess'
     tmp_embeds_fn = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/embeds'
     candidate_sentences = []
     all_embeds = []
+    print(f'')
     for lan in languages:
         preprocess(f'{tmp_preprocess_fn}/{lan}', person_filenames[lan])
         all_embeds.append(extract(encoder, lan, bpe_codes, f'{tmp_preprocess_fn}/{lan}', f'{tmp_embeds_fn}/{lan}', verbose=True))
@@ -78,7 +79,7 @@ def extract_candidate_sentences(languages, person_filenames, encoder, threshold)
                                  f'{tmp_preprocess_fn}/{lan}',
                                  languages[0], lan,
                                  f'{tmp_embeds_fn}/{languages[0]}', f'{tmp_embeds_fn}/{lan}',
-                                 parallel_file, 'mine')
+                                 output_file, 'mine')
         if parallel_sentences:
             for i, par in enumerate(parallel_sentences):
                 if float(par[0]) < threshold:
