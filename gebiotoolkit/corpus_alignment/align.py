@@ -69,11 +69,12 @@ def extract_candidate_sentences(languages, person_filenames, encoder, threshold)
     tmp_embeds_fn = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/embeds'
     candidate_sentences = []
     all_embeds = []
-    print(f'')
     for lan in languages:
+        print(f'Preprocessing files: {lan}')
         preprocess(f'{tmp_preprocess_fn}/{lan}', person_filenames[lan])
         all_embeds.append(extract(encoder, lan, bpe_codes, f'{tmp_preprocess_fn}/{lan}', f'{tmp_embeds_fn}/{lan}', verbose=True))
 
+    print(f'Preprocessing finished')
     for lan in languages:
         parallel_sentences = mine(f'{tmp_preprocess_fn}/{languages[0]}',
                                  f'{tmp_preprocess_fn}/{lan}',
@@ -83,8 +84,9 @@ def extract_candidate_sentences(languages, person_filenames, encoder, threshold)
         if parallel_sentences:
             for i, par in enumerate(parallel_sentences):
                 if float(par[0]) < threshold:
+                    invalid_upper_bound = i
                     break
-            candidate_sentences.append(parallel_sentences[:i])
+            candidate_sentences.append(parallel_sentences[:invalid_upper_bound])
     remove_tmp(languages)
     return candidate_sentences
 

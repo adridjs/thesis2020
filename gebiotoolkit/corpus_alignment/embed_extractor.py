@@ -27,7 +27,7 @@ def extract(encoder, token_lang, bpe_codes, ifname, output, verbose=False):
         if token_lang != '--':
             tok_fname = os.path.join(tmpdir, 'tok')
             romanize = True if token_lang == 'el' else False
-            Token(ifname, tok_fname, lang=token_lang, romanize=romanize, lower_case=True, gzip=False,  verbose=verbose, over_write=False)
+            Token(ifname, tok_fname, lang=token_lang, romanize=romanize, lower_case=True, gzip=False,  verbose=verbose, over_write=True)
             ifname = tok_fname
 
         if bpe_codes:
@@ -35,7 +35,7 @@ def extract(encoder, token_lang, bpe_codes, ifname, output, verbose=False):
             BPEfastApply(ifname, bpe_fname, bpe_codes, verbose=verbose, over_write=True)
             ifname = bpe_fname
 
-        EncodeFile(encoder, ifname, output, verbose=verbose, over_write=False, buffer_size=10000)
+        EncodeFile(encoder, ifname, output, verbose=verbose, over_write=True, buffer_size=10000)
         return EmbedLoad(output)
 
 
