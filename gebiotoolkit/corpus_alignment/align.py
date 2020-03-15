@@ -65,8 +65,8 @@ def extract_candidate_sentences(languages, person_filenames, encoder, threshold)
     """
     parallel_file = 'parallel.tmp'
     bpe_codes = LASER + 'models/93langs.fcodes'
-    tmp_preprocess_fn = f'{HOME}/gebiotoolkit/corpus_alignment/tmp_preprocess'
-    tmp_embeds_fn = f'{HOME}/gebiotoolkit/corpus_alignment/embeds'
+    tmp_preprocess_fn = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/tmp_preprocess'
+    tmp_embeds_fn = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/embeds'
     candidate_sentences = []
     all_embeds = []
     for lan in languages:
