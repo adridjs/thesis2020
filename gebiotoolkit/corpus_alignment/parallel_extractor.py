@@ -19,13 +19,10 @@ def mine(src, trg, src_lang, trg_lang, src_embeddings, trg_embeddings, output, m
     command = f'python3 {mine_file} {src} {trg} --src-lang {src_lang} --trg-lang {trg_lang} --src-embeddings {src_embeddings} ' \
                           f'--trg-embeddings {trg_embeddings} --output {output} --mode {mode} --verbose'
     os.system(command)
-    try:
-        with open(output, 'r', encoding='utf8') as f:
-            parallel = f.readlines()
-        for i, j in enumerate(parallel):
-            parallel[i] = j.split('\t')
-        os.remove(output)
-    except Exception as e:
-        print(e)
-        parallel = []
+
+    with open(output, 'r', encoding='utf8') as f:
+        parallel = f.readlines()
+    for i, j in enumerate(parallel):
+        parallel[i] = j.split('\t')
+    os.remove(output)
     return parallel
