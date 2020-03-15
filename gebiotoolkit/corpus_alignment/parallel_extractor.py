@@ -13,7 +13,7 @@ LASER = os.environ['LASER']
 
 def mine(src, trg, src_lang, trg_lang, src_embeddings, trg_embeddings, output, mode):
     mine_file = LASER + 'source/mine_bitexts.py'
-    command = f'python 3 {mine_file} {src} {trg}--src-lang {src_lang} --trg-lang {trg_lang} --src-embeddings {src_embeddings} ' \
+    command = f'python3 {mine_file} {src} {trg}--src-lang {src_lang} --trg-lang {trg_lang} --src-embeddings {src_embeddings} ' \
                           f'--trg-embeddings {trg_embeddings} --output {output} --mode {mode}'
     os.system(command)
     try:
