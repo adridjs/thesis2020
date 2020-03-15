@@ -7,7 +7,7 @@ Created on Sat Oct  5 23:34:57 2019
 """
 import os
 home = os.environ['HOME']
-os.environ['LASER'] = f'{home}/LASER/LASER-master/'
+os.environ['LASER'] = f'{home}/LASER/'
 LASER = os.environ['LASER']
 
 
