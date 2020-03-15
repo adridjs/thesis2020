@@ -11,7 +11,7 @@ os.environ['LASER'] = f'{home}/LASER/LASER-master/'
 LASER = os.environ['LASER']
 
 
-def mine(src, trg, src_lang, trg_lang, src_embeddings, trg_embeddings, output, mode,):
+def mine(src, trg, src_lang, trg_lang, src_embeddings, trg_embeddings, output, mode):
     mine_file = LASER + 'source/mine_bitexts.py'
     command = f'python 3 {mine_file} {src} {trg}--src-lang {src_lang} --trg-lang {trg_lang} --src-embeddings {src_embeddings} ' \
                           f'--trg-embeddings {trg_embeddings} --output {output} --mode {mode}'
@@ -19,7 +19,7 @@ def mine(src, trg, src_lang, trg_lang, src_embeddings, trg_embeddings, output, m
     try:
         with open(output, 'r', encoding='utf8') as f:
             parallel = f.readlines()
-        for i,j in enumerate(parallel):
+        for i, j in enumerate(parallel):
             parallel[i] = j.split('\t')
         os.remove(output)
     except:

@@ -20,7 +20,7 @@ from text_processing import Token, BPEfastApply
 from embed import SentenceEncoder, EncodeFile, EmbedLoad
 
 
-def extract(encoder, token_lang, bpe_codes, ifname, output , verbose = False):
+def extract(encoder, token_lang, bpe_codes, ifname, output, verbose=False):
     with tempfile.TemporaryDirectory() as tmpdir:
         print(tmpdir)
 

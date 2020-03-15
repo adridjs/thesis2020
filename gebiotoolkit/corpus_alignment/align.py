@@ -21,68 +21,76 @@ os.environ['LASER'] = f'{HOME}/LASER/'
 LASER = os.environ['LASER']
 
 
-def get_person_filenames_by_language(corpus_folder, person, list_languages):
+def get_person_filenames_by_language(corpus_folder, person, languages):
     """
-
-    :param corpus_folder:
-    :param person:
-    :param list_languages:
-    :return:
+    Retrieves document filenames by language, given an input folder :param corpus_folder:, a :param person: name and a set of :param languages:
+    :param corpus_folder: Folder in which to look for documents
+    :type corpus_folder: str
+    :param person: Person to look for
+    :type person: str
+    :param languages: Languages to look for
+    :type languages: set
+    :return: Dictionary of file names where its keys is the language and its values is the filename string
+    :rtype: dict[str, str]
     """
     person_filenames = {}
-    for lan_p in list_languages:
-        person_filenames[lan_p] = corpus_folder + '/' + lan_p + '/raw/' + person
+    for lan in languages:
+        person_filenames[lan] = corpus_folder + '/' + lan + '/raw/' + person
     return person_filenames
 
 
 def remove_tmp(languages):
     """
-
-    :param languages:
+    Removes the temporary file created by extract in embed_extractor.py
+    :param languages: Languages in which the temporary file has been created
+    :type languages: set
     :return:
     """
-    for i in languages:
+    for lang in languages:
         try:
-            os.remove('tmp_preprocess/' + i)
-            os.remove('embeds/' + i)
+            os.remove('tmp_preprocess/' + lang)
+            os.remove('embeds/' + lang)
         except:
             pass
 
 
-def extract_candidate_sentences(languages, person_filenames, encoder, bpe_codes, parallel_file, threshold):
+def extract_candidate_sentences(languages, person_filenames, encoder, threshold):
     """
 
     :param languages:
     :param person_filenames:
     :param encoder:
-    :param bpe_codes:
-    :param parallel_file:
     :param threshold:
     :return:
     """
-    sel_par_sentences = []
+    parallel_file = 'parallel.tmp'
+    bpe_codes = LASER + 'models/93langs.fcodes'
+    tmp_preprocess_fn = f'{HOME}/gebiotoolkit/corpus_alignment/tmp_preprocess'
+    tmp_embeds_fn = f'{HOME}/gebiotoolkit/corpus_alignment/embeds'
+    candidate_sentences = []
     all_embeds = []
     for lan in languages:
         preprocess(lan, person_filenames[lan])
-        all_embeds.append(extract(encoder, lan, bpe_codes, 'tmp_preprocess/' + lan, 'embeds/' + str(lan), verbose = False))
+        all_embeds.append(extract(encoder, lan, bpe_codes, f'{tmp_preprocess_fn}/{lan}', f'{tmp_embeds_fn}/{lan}', verbose=True))
+
     for lan in languages:
-        all_par_sentences = mine('tmp_preprocess/' + languages[0],
-                                 'tmp_preprocess/' + lan,
-                                 languages[0], lan, 
-                                 'embeds/' + languages[0], 'embeds/' + lan, 
+        parallel_sentences = mine(f'{tmp_preprocess_fn}/{languages[0]}',
+                                 f'{tmp_preprocess_fn}/{lan}',
+                                 languages[0], lan,
+                                 f'{tmp_embeds_fn}/{languages[0]}', f'{tmp_embeds_fn}/{lan}',
                                  parallel_file, 'mine')
-        if all_par_sentences:
-            for i, par in enumerate(all_par_sentences):
+        if parallel_sentences:
+            for i, par in enumerate(parallel_sentences):
                 if float(par[0]) < threshold:
                     break
-            sel_par_sentences.append(all_par_sentences[:i])
+            candidate_sentences.append(parallel_sentences[:i])
     remove_tmp(languages)
-    return sel_par_sentences
+    return candidate_sentences
 
 
 def compare_sentences(lan_1, lan_2):
     """
-
+    Given a list of sentences in
     :param lan_1:
     :param lan_2:
     :return:
@@ -96,42 +104,45 @@ def compare_sentences(lan_1, lan_2):
     return update
 
 
-def find_parallel_sentences(sel_par_sentences):
+def find_parallel_sentences(candidate_sentences):
     """
-
-    :param sel_par_sentences:
-    :return:
+    Given a list of :param candidate_sentences: compare them and extract valid parallel sentences.
+    :param candidate_sentences: Sentences that we want to check are valid parallel sentences.
+    :type candidate_sentences: list of tuple
+    :return: A list of parallel sentences, which is a subset of the given :param candidate_sentences
+    :rtype: list of tuple
     """
     try:
-        parrallel_sentences = [[i[1]] for i in sel_par_sentences[0]]
-        for i in range(1,len(sel_par_sentences)):
-            parrallel_sentences = compare_sentences(parrallel_sentences, sel_par_sentences[i])
+        parallel_sentences = [[i[1]] for i in candidate_sentences[0]]
+        for sentence in candidate_sentences:
+            parallel_sentences = compare_sentences(parallel_sentences, sentence)
     except:
-        parrallel_sentences = []
-    return parrallel_sentences        
+        parallel_sentences = []
+    return parallel_sentences
 
 
 def run(encoder, person_filenames, languages, threshold=1.055):
     """
-    Run an :param encoder: onto the given :param person_files: in the set of :param languages: passed. The threshold
+    Run an :param encoder: onto the given :param person_files: in the set of :param languages: passed. The threshold is used to filter out invalid
+    sentence pairs.
     :param encoder:
     :param person_filenames:
     :param languages: Languages in which the encoder will be passed.
     :param threshold: Ratio between pairs of sentences to be accepted as valid.
     :return:
     """
-    bpe_codes = LASER + 'models/93langs.fcodes'  
-    parallel_tmp = 'parallel.txt'
-    sel_par_sentences = extract_candidate_sentences(languages, person_filenames, encoder, bpe_codes, parallel_tmp, threshold)
-    par = find_parallel_sentences(sel_par_sentences)
-    return par
+    candidate_sentences = extract_candidate_sentences(languages, person_filenames, encoder, threshold)
+    parallel_sentences = find_parallel_sentences(candidate_sentences)
+    return parallel_sentences
 
 
 def get_names_in_all_languages(corpus_folder, languages):
     """
     Given a :param corpus_folder: and a set of languages, retrieve persons whose documents exist in all :param languages:
     :param corpus_folder: Folder where the processed wiki dump files are saved. Normally, it follows /wiki/{lang}/xxxx , i.e lang  'es'
+    :type corpus_folder: str
     :param languages: Set of languages in which to look for existing documents.
+    :type languages: set
     :return: Names that exist in all given :param languages:
     :rtype: set
     """
@@ -176,11 +187,11 @@ def main():
     names = get_names_in_all_languages(corpus_folder, languages)
     for person in names:
         print(person)
-        person_filenames = get_person_filenames_by_language(corpus_folder, person, list_languages=languages)
+        person_filenames = get_person_filenames_by_language(corpus_folder, person, languages=languages)
         sentences = run(encoder, person_filenames, languages)
         if sentences:
             store_sentences(sentences, names, languages, results_folder, person)
 
 
-if __name__ == '__main__':   
+if __name__ == '__main__':
     main()
