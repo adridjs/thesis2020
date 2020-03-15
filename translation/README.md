@@ -37,12 +37,12 @@ Verify swig installation.
 swig -version
 ```
 #Install Freeling
-
-```mkdir build
-cd build/
-cmake ..
+The flag `-DPYTHON3_API` is used in order to be able to import Freeling libraries from Python 3.
+```
 sudo apt install cmake
-cmake ..
 sudo apt-get install zlib1g-dev build-essential libboost-all-dev
 sudo apt-get install -y libicu-dev
+mkdir build
+cd build/
 cmake .. -DPYTHON3_API=ON
+```

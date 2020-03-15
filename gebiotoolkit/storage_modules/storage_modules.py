@@ -9,16 +9,16 @@ Created on Fri Nov 29 21:24:01 2019
 from nltk.tokenize import word_tokenize
 
 
-def store_sentences(sentences, names, languages, results_folder, person):
+def store_sentences(sentences, en_doc, languages, results_folder, person):
     for sentence in sentences:
-        gender = find_pronouns(names['en'])
+        gender = find_pronouns(en_doc)
         if len(sentence) == len(languages):
-            for i in range(len(languages)):
-                with open(results_folder + 'lan_' + str(i) + '_' + gender + '.txt', 'a') as f:
-                    if '\n' in sentence[i]:
-                        f.write(person + ' : ' + sentence[i])
+            for language in languages:
+                with open(f'{results_folder}/{language}_{gender}.txt', 'a') as f:
+                    if '\n' in sentence[language]:
+                        f.write(person + ' : ' + sentence[language])
                     else:
-                        f.write(person + ' : ' + sentence[i] + '\n')
+                        f.write(person + ' : ' + sentence[language] + '\n')
 
 
 def find_pronouns(filename):
@@ -36,3 +36,8 @@ def find_pronouns(filename):
     else:
         gender = 'she'
     return gender
+
+
+def load_wiki_names(wiki_filename):
+    with open(wiki_filename) as f:
+        sentence = f.readlines()

@@ -192,8 +192,9 @@ def main():
         print(person)
         person_filenames = get_person_filenames_by_language(corpus_folder, person, languages=languages)
         sentences = run(encoder, person_filenames, languages)
+        en_doc = open(person_filenames['en']).readlines()
         if sentences:
-            store_sentences(sentences, names, languages, results_folder, person)
+            store_sentences(sentences, en_doc, languages, results_folder, person)
 
 
 if __name__ == '__main__':
