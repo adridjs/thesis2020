@@ -17,7 +17,7 @@ def mine(src, trg, src_lang, trg_lang, src_embeddings, trg_embeddings, output, m
           f'src: {src}\n trg: {trg}\n src-lang: {src_lang}\n trg-lang: {trg_lang}\n src-embeddings {src_embeddings} \n'
                           f'trg-embeddings {trg_embeddings}\noutput {output}\nmode {mode}')
     command = f'python3 {mine_file} {src} {trg} --src-lang {src_lang} --trg-lang {trg_lang} --src-embeddings {src_embeddings} ' \
-                          f'--trg-embeddings {trg_embeddings} --output {output} --mode {mode}'
+                          f'--trg-embeddings {trg_embeddings} --output {output} --mode {mode} --verbose'
     os.system(command)
     try:
         with open(output, 'r', encoding='utf8') as f:
