@@ -27,7 +27,7 @@ def extract(encoder, token_lang, bpe_codes, ifname, output, verbose=False):
         if token_lang != '--':
             tok_fname = os.path.join(tmpdir, 'tok')
             romanize = True if token_lang == 'el' else False
-            Token(ifname, tok_fname, lang=token_lang, romanize=romanize, lower_case=True, gzip=False,  verbose=verbose, over_write=True)
+            Token(ifname, tok_fname, lang=token_lang, romanize=romanize, lower_case=True, gzip=False,  verbose=verbose, over_write=False)
             ifname = tok_fname
 
         if bpe_codes:

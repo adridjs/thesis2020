@@ -6,7 +6,7 @@ Created on Fri Nov 29 21:13:52 2019
 @author: plxiv
 """
 
-import nltk.data
+import nltk
 
 
 def preprocess(outputfile, filename):

@@ -7,8 +7,8 @@ import sys
 import spacy
 
 sys.path.append(".")
-from utils.constants import GENDERS, LANGUAGES, STOP_WORDS, NLP_MODELS
-from utils.regexp import RegExp
+from .utils.constants import GENDERS, LANGUAGES, NLP_MODELS
+from .utils.regexp import RegExp
 from gebiotoolkit.storage_modules.file_restructure import include_sentence, store_sentences
 
 
@@ -37,7 +37,7 @@ class DataDriver:
         Load spacy model based on :param language. This was created in order to have only one model loaded at a time, as some spacy models are huge.
         :param language: The language in which to retrieve the spacy's model name.
         :type language: str
-        :return:
+        :return: TODO
         """
         try:
             model_name = self.nlp_model_mapping[language]
@@ -64,8 +64,8 @@ class DataDriver:
     def _parse_filtered_docs(self):
         """
         Get the documents for each lang-gender key and return them together with the key that has the least documents
-        :return: The documents and the key with least documents
-        :rtype: dict[str, list]
+        :return: The documents as a dictionary and the key with least documents along with its value as a tuple
+        :rtype: dict[str, list], tuple[str, int]
         """
         docs = defaultdict(list)
         least_docs_key = (None, 10 ** 6)
@@ -91,7 +91,6 @@ class DataDriver:
         :param docs: Documents in the data set
         :type docs: dict[str, list]
         :param least_docs_value: least number of documents in the whole data set
-        :return:
         """
         self.balanced_dataset = defaultdict(list)
         for lang in self.languages:
@@ -119,9 +118,9 @@ class DataDriver:
         # Balance dataset based on least_docs_val.
         self._balance_dataset(docs, least_docs_value=least_docs_value)
 
-    def save_xml(self):
+    def save_sentences(self):
         """
-        Returns a list of a list of words for the specified file names constructed by :param corpus_folder and :param languages
+        Saves a list of a list of words for the specified file names constructed by :param corpus_folder and :param languages
         Each sublist is a sentence.
         :return:
         """
@@ -165,7 +164,7 @@ def main():
 
     dd = DataDriver(corpus_folder, languages=languages)
     # Generate files *.{filtered}.txt
-    dd.save_xml()
+    dd.save_sentences()
     dd.get_balanced_dataset()
     print(f'{key}: {sentences[:10]}\n' for key, sentences in dd.balanced_dataset.items())
 
