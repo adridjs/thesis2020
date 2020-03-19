@@ -149,7 +149,7 @@ def main():
         sentences_list = docs['es_he']
         # for line in open(args.file).readlines():
         for sentence in sentences_list:
-            analyze_sentence(' '.join(sentences_list[1]), tokenizer, splitter, sess_id, morph_analyzer, tagger, sense_annotator, parser, dependencies)
+            analyze_sentence(' '.join(sentence), tokenizer, splitter, sess_id, morph_analyzer, tagger, sense_annotator, parser, dependencies)
 
 
 def analyze_sentence(sentence, tokenizer, splitter, sess_id, morph_analyzer, tagger, sense_annotator, parser, dependencies):

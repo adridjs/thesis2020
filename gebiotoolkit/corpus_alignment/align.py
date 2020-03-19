@@ -47,8 +47,8 @@ def remove_tmp(person, languages):
     :type languages: set
     """
     for lang in languages:
-        os.remove(f'tmp_preprocess/{person}' + lang)
-        os.remove(f'embeds/{person}' + lang)
+        os.remove(f'tmp_preprocess/{lang}/{person}')
+        os.remove(f'embeds/{lang}/{person}')
 
 
 def run(encoder, person, person_filenames, languages, threshold=1.1, source_language='en'):
@@ -66,13 +66,13 @@ def run(encoder, person, person_filenames, languages, threshold=1.1, source_lang
     """
     bpe_codes = LASER + 'models/93langs.fcodes'
     output_file = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/parallel.tmp'  # parallel sentences will be stored here
-    tmp_preprocess_fn = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/tmp_preprocess/{person}/'
-    tmp_embeds_fn = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/embeds/{person}/'
+    tmp_preprocess_fn = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/tmp_preprocess/'
+    tmp_embeds_fn = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/embeds/'
     all_embeds = []
     for lang in languages:
-        print(f'Preprocessing files: {lang}')
-        preprocess(f'{tmp_preprocess_fn}/{lang}', person_filenames[lang])
-        all_embeds.append(extract(encoder, lang, bpe_codes, f'{tmp_preprocess_fn}/{lang}', f'{tmp_embeds_fn}/{lang}', verbose=True))
+        print(f'Preprocessing files: {lang}/{person}')
+        preprocess(f'{tmp_preprocess_fn}/{lang}/{person}', person_filenames[lang])
+        all_embeds.append(extract(encoder, lang, bpe_codes, f'{tmp_preprocess_fn}/{lang}/{person}', f'{tmp_embeds_fn}/{lang}/{person}', verbose=True))
 
     print(f'Preprocessing finished')
     candidate_sentences = defaultdict(list)
@@ -82,10 +82,10 @@ def run(encoder, person, person_filenames, languages, threshold=1.1, source_lang
     except ValueError:
         print(f'Trying to remove {source_language} from languages list, but it doesn\'t exist in it. Did you miss passing the source language?')
     for lang in languages:
-        parallel_sentences = mine(f'{tmp_preprocess_fn}/{source_language}',
-                                 f'{tmp_preprocess_fn}/{lang}',
+        parallel_sentences = mine(f'{tmp_preprocess_fn}/{source_language}/{person}',
+                                 f'{tmp_preprocess_fn}/{lang}/{person}',
                                   source_language, lang,
-                                 f'{tmp_embeds_fn}/{source_language}', f'{tmp_embeds_fn}/{lang}',
+                                 f'{tmp_embeds_fn}/{source_language}/{person}', f'{tmp_embeds_fn}/{lang}/{person}',
                                   output_file, 'mine')
         for r_s_tuple in parallel_sentences:
             ratio, sentences = r_s_tuple[0], r_s_tuple[1:]
@@ -129,7 +129,7 @@ def retrieve_args():
     parser = argparse.ArgumentParser(description='Stores sentences of persons appearing in all languages given by --languages command')
     parser.add_argument('-l', '--languages', nargs='+', required=True, help='Languages in which the parallel sentences will be generated')
     parser.add_argument('-f', '--folder', help='folder where the extracted corpus from wikipedia dumps is located',
-                        default='../corpus_extraction/wiki')
+                        default='gebiotoolkit/corpus_extraction/wiki')
     parser.add_argument('-s', '--save_path', required=False, help='Folder where the sentences will be stored', default='aligned/')
     parser.add_argument('-e', '--encoder', required=False, help='path to the LASER encoder',
                         default=f'{LASER}/models/bilstm.93langs.2018-12-26.pt')
