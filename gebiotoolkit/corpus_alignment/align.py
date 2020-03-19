@@ -40,31 +40,34 @@ def get_person_filenames_by_language(corpus_folder, person, languages):
     return person_filenames
 
 
-def remove_tmp(languages):
+def remove_tmp(person, languages):
     """
     Removes the temporary file created by extract in embed_extractor.py
     :param languages: Languages in which the temporary file has been created
     :type languages: set
     """
     for lang in languages:
-        os.remove('tmp_preprocess/' + lang)
-        os.remove('embeds/' + lang)
+        os.remove(f'tmp_preprocess/{person}' + lang)
+        os.remove(f'embeds/{person}' + lang)
 
 
-def run(encoder, person_filenames, languages, threshold=1.1, source_language='en'):
+def run(encoder, person, person_filenames, languages, threshold=1.1, source_language='en'):
     """
     Run an :param encoder: onto the given :param person_files: in the set of :param languages: passed. The threshold is used to filter out invalid
     sentence pairs.
-     :param languages:
-    :param person_filenames:
+
     :param encoder:
+    :param person:
+    :param person_filenames:
+    :param languages:
     :param threshold:
-    :return: TODO
-     """
+    :param source_language:
+    :return:
+    """
     bpe_codes = LASER + 'models/93langs.fcodes'
     output_file = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/parallel.tmp'  # parallel sentences will be stored here
-    tmp_preprocess_fn = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/tmp_preprocess'
-    tmp_embeds_fn = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/embeds'
+    tmp_preprocess_fn = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/tmp_preprocess/{person}/'
+    tmp_embeds_fn = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/embeds/{person}/'
     all_embeds = []
     for lang in languages:
         print(f'Preprocessing files: {lang}')
@@ -91,7 +94,7 @@ def run(encoder, person_filenames, languages, threshold=1.1, source_language='en
             candidate_sentences[lang].append(sentences)
 
     languages.append(source_language)
-    remove_tmp(languages)
+    remove_tmp(person, languages)
     return candidate_sentences
 
 
@@ -147,7 +150,7 @@ def main():
     for person in names:
         print(person)
         person_filenames = get_person_filenames_by_language(corpus_folder, person, languages=languages)
-        sentences = run(encoder, person_filenames, languages, source_language=source_language)
+        sentences = run(encoder, person, person_filenames, languages, source_language=source_language)
         if sentences:
             store_sentences(sentences, person_filenames['en'], results_folder, person, source_language='en')
 

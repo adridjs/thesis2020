@@ -15,7 +15,7 @@ def get_gendered_words(docs):
                 tag = token.tag_
                 pos = token.pos_
                 m = re.match(r'.*Gender=(\w*)', tag)
-                if m:
+                if m and pos in ['ADJ', 'DET']:
                     # gender = m.groups()
                     gendered_words[lang_gender].add(token.text)
                     # TODO:
