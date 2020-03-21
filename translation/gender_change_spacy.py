@@ -38,7 +38,7 @@ def get_gendered_words(docs):
         model = spacy.load(NLP_MODELS[lang])
         print(f'Processing language and gender: {lang_gender}')
         gendered_words[lang_gender] = set()
-        for sentence in sentences_by_lang:
+        for sentence in sentences_by_lang[:20]:
             doc = model(' '.join(sentence))
             for token in doc:
                 tag = token.tag_
@@ -78,34 +78,38 @@ def get_replace_word_es(word, lemma, candidates):
     return replace
 
 
-def replace_words_mapping(words_to_replace, language, l2w):
+def get_replace_words_mapping(words_to_replace, language, lemma2word=None):
     """
     TODO
     :param words_to_replace:
     :param language:
-    :param l2w:
+    :param lemma2word:
     :return:
     """
-    replace_mapping = dict()
+    mapping = dict()
     for triplet in words_to_replace:
         # lemma from spacy is actually the masculine and singular form
         word, lemma, pos = triplet
         # we want to change gender to all words independently of gender
         if language == 'es':
-            candidates = l2w[lemma]  # if mapping is not one-to-one, it may contain the opposite gender word
-            replace = get_replace_word_es(word, lemma, candidates)
-            if replace:
-                replace_mapping.update({word: replace})
+            candidates = l2w.get(lemma)
+            if candidates:  # if mapping is not one-to-one, it may contain the opposite gender word
+                replace = get_replace_word_es(word, lemma, candidates)
+                if replace:
+                    print(f'Replacing word {word} -> {replace}')
+                    mapping.update({word: replace})
+            else:
+                print(f'Couldn\'t find {lemma} from word {word} in l2w.')
         elif language == 'en':
             # TODO
             # get_replace_word_en
             pass
 
-    return replace_mapping
+    return mapping
 
 
 if __name__ == '__main__':
-    languages = {'es', 'en'}
+    languages = {'es'}
     f = '/home/johndoe/.envs/thesis/lib/python3.6/site-packages/spacy_lookups_data/data/'
     l2w = get_lemma2words(f, languages)
     dd = DataDriver('../word2vec/biographies/', languages=languages)
@@ -113,11 +117,13 @@ if __name__ == '__main__':
     # TODO: Insert this DataDriver.get_balanced_dataset() in order to have a uniform distribution of sentences between genders.
     gend_words = get_gendered_words(docs)
     for lang_gender, words in gend_words.items():
+        docs_to_change = docs[lang_gender]
         lang, gender = lang_gender.split('_')
         # for each word in words, check if we have the word lemma in the lookup table
         words_to_replace = list(filter(lambda x: x[1] in l2w[lang], words))
         # we get the opposite gender word
-        word2replace_mapping = replace_words_mapping(words_to_replace, lang, l2w)
+        replace_words_mapping = get_replace_words_mapping(words_to_replace, lang, l2w)
+
         # TODO: Actually replace the words in the documents.
 
 

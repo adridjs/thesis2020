@@ -15,7 +15,7 @@ def store_sentences(sentences, en_doc, results_folder, person, source_language='
         gender = find_pronouns(en_doc)
         source_language_s, target_language_s = list(zip(*src_targ))
         for trg_s in target_language_s:
-            with open(f'{results_folder}/{target_lang}_{gender}.txt', 'a') as f:
+            with open(f'{results_folder}/{target_lang}_{gender}.txt', 'a+') as f:
                 if '\n' in src_targ:
                     f.write(person + ' : ' + trg_s)
                 else:
@@ -23,7 +23,7 @@ def store_sentences(sentences, en_doc, results_folder, person, source_language='
 
         if not written_src:
             for src_s in source_language_s:
-                with open(f'{results_folder}/{source_language}_{gender}.txt', 'a') as f:
+                with open(f'{results_folder}/{source_language}_{gender}.txt', 'a+') as f:
                     if '\n' in src_targ:
                         f.write(person + ' : ' + src_s)
                     else:
