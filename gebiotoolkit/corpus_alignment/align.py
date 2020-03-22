@@ -66,8 +66,8 @@ def run(encoder, person, person_filenames, languages, threshold=1.1, source_lang
     """
     bpe_codes = LASER + 'models/93langs.fcodes'
     output_file = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/parallel.tmp'  # parallel sentences will be stored here
-    tmp_preprocess_fn = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/tmp_preprocess/'
-    tmp_embeds_fn = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/embeds/'
+    tmp_preprocess_fn = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/tmp_preprocess'
+    tmp_embeds_fn = f'{HOME}/thesis2020/gebiotoolkit/corpus_alignment/embeds'
     all_embeds = []
     for lang in languages:
         print(f'Preprocessing files: {lang}/{person}')
@@ -147,6 +147,7 @@ def main():
     source_language = 'en'
     encoder = generate_encoder(encoder_file)
     names = get_names_in_all_languages(corpus_folder, languages)
+    names = list(map(lambda s: '_'.join(s.split()), names))
     for person in names:
         print(person)
         person_filenames = get_person_filenames_by_language(corpus_folder, person, languages=languages)
