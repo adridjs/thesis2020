@@ -10,7 +10,7 @@ class Word2VecSettings:
     Settings for the Word2VecTrainer class.
     :param languages: set of languages to get the embeddings from.
     """
-    def __init__(self, languages, kwargs):
+    def __init__(self, kwargs):
         self.save_binary = kwargs.get('save_binary', False)
         self.min_count = kwargs.get('min_count', 5)
         self.model_filename = kwargs.get('model_filename', f'word2vec/biographies_word2vec_{self.min_count}')
@@ -27,7 +27,7 @@ class Word2VecTrainer:
     def __init__(self, languages, n_dim=512, epochs=20, **kwargs):
         self.n_dim = n_dim
         self.epochs = epochs
-        self.settings = Word2VecSettings(languages, kwargs)
+        self.settings = Word2VecSettings(**kwargs)
         self.data_driver = DataDriver(self.settings.input_folder, languages)
 
     def train(self):

@@ -34,3 +34,10 @@ Make sure that python script can see both `pyfreeling.py` and `_pyfreeling.so`
 ```
 export PYTHONPATH=$PYTHONPATH:/usr/local/share/freeling/APIs/python3
 ```
+
+#Modules
+###Gender Change
+`gender_change_spacy.py` writes to a `log_filename` if provided, in this format:
+```
+key: lang_gender | {doc} -----> {changed_doc}'
+```

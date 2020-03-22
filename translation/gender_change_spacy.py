@@ -1,11 +1,14 @@
 import spacy
 import re
+import logging
+import json
+from _collections import defaultdict
 
 from word2vec.data_driver import DataDriver
 from word2vec.utils.constants import NLP_MODELS
+from gebiotoolkit.storage_modules.storage_modules import store_sentences
 
-import json
-from _collections import defaultdict
+logging.basicConfig(filename='gender_change.log',level=logging.DEBUG)
 
 
 def get_lemma2words(lookup_folder, languages):
@@ -34,21 +37,56 @@ def get_gendered_words(docs):
     """
     gendered_words = dict()
     for lang_gender, sentences_by_lang in docs.items():
-        lang, _ = lang_gender.split('_')
+        lang, gender = lang_gender.split('_')
         model = spacy.load(NLP_MODELS[lang])
-        print(f'Processing language and gender: {lang_gender}')
+        logging.info(f'Processing language and gender: {lang_gender}')
         gendered_words[lang_gender] = set()
-        for sentence in sentences_by_lang[:20]:
+        for sentence in sentences_by_lang:
             doc = model(' '.join(sentence))
             for token in doc:
                 tag = token.tag_
                 pos = token.pos_
                 m = re.match(r'.*Gender=(\w*)', tag)
                 if m and pos in ['ADJ', 'DET', 'NOUN']:
-                    # gender = m.groups()
                     gendered_words[lang_gender].add((token.text, token.lemma_, pos))
-                    # TODO:
+
     return gendered_words
+
+
+def replace_words_in_docs(docs, mapping):
+    # escape words to be replaced
+    replace_mapping = dict((re.escape(k), v) for k, v in mapping.items())
+    # join them by | to consider all words in a single regexp
+    pattern = re.compile("|".join(replace_mapping.keys()))
+    changed_docs = list()
+    for doc in docs:
+        if any([wtr in doc for wtr in mapping.keys()]):
+            # substitute the matched word by its mapping value
+            changed_doc = pattern.sub(lambda m: mapping[m.group(0)], ' '.join(doc))
+            changed_docs.append(changed_doc)
+            logging.info(f'{doc} -----> {changed_doc}')
+        else:
+            # changed_docs.append(doc)
+            pass
+    return  changed_docs
+
+
+def get_gender_changed_docs(docs, lemma2words):
+    changed_docs = dict()
+    gendered_words = get_gendered_words(docs)
+    for lang_gender, words in gendered_words.items():
+        docs_to_change = docs[lang_gender]
+        lang, gender = lang_gender.split('_')
+        logging.info(f'Number of gendered words in language {lang} and gender {gender}: {len(words)}')
+        # for each word in words, check if we have the word lemma in the lookup table
+        words_to_replace = list(filter(lambda x: x[1] in lemma2words[lang], words))
+        logging.info(f'Trying to find a mapping for replacing a total of {len(words_to_replace)} words')
+        # we get the opposite gender word
+        replace_mapping = get_replace_words_mapping(words_to_replace, lang, lemma2words)
+        logging.info(f'Found mapping for {len(words_to_replace)} words')
+        changed_docs[lang_gender] = replace_words_in_docs(docs_to_change, replace_mapping)
+
+    return changed_docs
 
 
 def get_replace_word_es(word, lemma, candidates):
@@ -61,7 +99,7 @@ def get_replace_word_es(word, lemma, candidates):
     """
     replace = None
     if len(candidates) == 1:
-        print(f'WARNING: Found one-to-one mapping between {candidates[0]} and {lemma}')
+        logging.info(f'WARNING: Found one-to-one mapping between {candidates[0]} and {lemma}')
     elif word.endswith('as'):
         if lemma + 's' in candidates:
             replace = lemma + 's'
@@ -78,7 +116,7 @@ def get_replace_word_es(word, lemma, candidates):
     return replace
 
 
-def get_replace_words_mapping(words_to_replace, language, lemma2word=None):
+def get_replace_words_mapping(words_to_replace, language, lemma2words):
     """
     TODO
     :param words_to_replace:
@@ -92,14 +130,15 @@ def get_replace_words_mapping(words_to_replace, language, lemma2word=None):
         word, lemma, pos = triplet
         # we want to change gender to all words independently of gender
         if language == 'es':
+            l2w = lemma2words.get(language)
             candidates = l2w.get(lemma)
-            if candidates:  # if mapping is not one-to-one, it may contain the opposite gender word
+            if len(candidates):  # if mapping is not one-to-one, it may contain the opposite gender word
                 replace = get_replace_word_es(word, lemma, candidates)
                 if replace:
-                    print(f'Replacing word {word} -> {replace}')
+                    logging.info(f'Replacing word {word} -> {replace}')
                     mapping.update({word: replace})
             else:
-                print(f'Couldn\'t find {lemma} from word {word} in l2w.')
+                logging.info(f'Couldn\'t find {lemma} from word {word} in l2w.')
         elif language == 'en':
             # TODO
             # get_replace_word_en
@@ -111,21 +150,17 @@ def get_replace_words_mapping(words_to_replace, language, lemma2word=None):
 if __name__ == '__main__':
     languages = {'es'}
     f = '/home/johndoe/.envs/thesis/lib/python3.6/site-packages/spacy_lookups_data/data/'
+    gender_change_logs = 'gender_change.log'
+    gender_change_output = ''
     l2w = get_lemma2words(f, languages)
     dd = DataDriver('../word2vec/biographies/', languages=languages)
     docs, _ = dd._parse_filtered_docs()
     # TODO: Insert this DataDriver.get_balanced_dataset() in order to have a uniform distribution of sentences between genders.
-    gend_words = get_gendered_words(docs)
-    for lang_gender, words in gend_words.items():
-        docs_to_change = docs[lang_gender]
-        lang, gender = lang_gender.split('_')
-        # for each word in words, check if we have the word lemma in the lookup table
-        words_to_replace = list(filter(lambda x: x[1] in l2w[lang], words))
-        # we get the opposite gender word
-        replace_words_mapping = get_replace_words_mapping(words_to_replace, lang, l2w)
-
-        # TODO: Actually replace the words in the documents.
-
+    changed_docs = get_gender_changed_docs(docs, l2w)
+    for lang_gender, docs in changed_docs.items():
+        with open(f'{lang_gender}.changed.txt', 'w+') as f:
+            for doc in docs:
+                f.write(doc + '\n')
 
 # In practice, however, using individual words as the unit of comparison is not optimal. Instead, BLEU computes the same modified precision
 # metric using n-grams. The length which has the "highest correlation with monolingual human judgements"[5] was found to be four. The

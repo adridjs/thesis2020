@@ -71,7 +71,7 @@ def run(encoder, person, person_filenames, languages, threshold=1.1, source_lang
     all_embeds = []
     for lang in languages:
         print(f'Preprocessing files: {lang}/{person}')
-        preprocess(f'{tmp_preprocess_fn}/{lang}/{person}', person_filenames[lang])
+        preprocess(f'{tmp_preprocess_fn}/{lang}/{" ".join(person.split("_"))}', person_filenames[lang])
         all_embeds.append(extract(encoder, lang, bpe_codes, f'{tmp_preprocess_fn}/{lang}/{person}', f'{tmp_embeds_fn}/{lang}/{person}', verbose=True))
 
     print(f'Preprocessing finished')
