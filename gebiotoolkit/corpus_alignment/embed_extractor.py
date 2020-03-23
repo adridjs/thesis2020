@@ -35,7 +35,7 @@ def extract(encoder, token_lang, bpe_codes, ifname, output, verbose=False):
             BPEfastApply(ifname, bpe_fname, bpe_codes, verbose=verbose, over_write=True)
             ifname = bpe_fname
 
-        EncodeFile(encoder, ifname, output, verbose=verbose, over_write=True, buffer_size=10000)
+        EncodeFile(encoder, ifname, output, verbose=verbose, over_write=True, buffer_size=1000000)
         return EmbedLoad(output)
 
 

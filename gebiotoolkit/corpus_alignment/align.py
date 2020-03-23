@@ -71,7 +71,7 @@ def run(encoder, person, person_filenames, languages, threshold=1.1, source_lang
     all_embeds = []
     for lang in languages:
         print(f'Preprocessing files: {lang}/{person}')
-        preprocess(f'{tmp_preprocess_fn}/{lang}/{" ".join(person.split("_"))}', person_filenames[lang])
+        preprocess(f'{tmp_preprocess_fn}/{lang}/{person}', person_filenames[lang])
         all_embeds.append(extract(encoder, lang, bpe_codes, f'{tmp_preprocess_fn}/{lang}/{person}', f'{tmp_embeds_fn}/{lang}/{person}', verbose=True))
 
     print(f'Preprocessing finished')
@@ -129,7 +129,7 @@ def retrieve_args():
     parser = argparse.ArgumentParser(description='Stores sentences of persons appearing in all languages given by --languages command')
     parser.add_argument('-l', '--languages', nargs='+', required=True, help='Languages in which the parallel sentences will be generated')
     parser.add_argument('-f', '--folder', help='folder where the extracted corpus from wikipedia dumps is located',
-                        default='gebiotoolkit/corpus_extraction/wiki')
+                        default='../corpus_extraction/wiki')
     parser.add_argument('-s', '--save_path', required=False, help='Folder where the sentences will be stored', default='aligned/')
     parser.add_argument('-e', '--encoder', required=False, help='path to the LASER encoder',
                         default=f'{LASER}/models/bilstm.93langs.2018-12-26.pt')
@@ -147,13 +147,20 @@ def main():
     source_language = 'en'
     encoder = generate_encoder(encoder_file)
     names = get_names_in_all_languages(corpus_folder, languages)
-    names = list(map(lambda s: '_'.join(s.split()), names))
+    c = 0
     for person in names:
         print(person)
+        if "'" in person:
+            print(f'single quote: {person}')
+            c += 1
+            continue
         person_filenames = get_person_filenames_by_language(corpus_folder, person, languages=languages)
+        person = '_'.join(person.split())
         sentences = run(encoder, person, person_filenames, languages, source_language=source_language)
         if sentences:
             store_sentences(sentences, person_filenames['en'], results_folder, person, source_language='en')
+
+    print(f'single quote n: c')
 
 
 if __name__ == '__main__':

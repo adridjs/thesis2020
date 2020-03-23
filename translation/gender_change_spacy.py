@@ -46,9 +46,10 @@ def get_gendered_words(docs):
             for token in doc:
                 tag = token.tag_
                 pos = token.pos_
-                m = re.match(r'.*Gender=(\w*)', tag)
-                if m and pos in ['ADJ', 'DET', 'NOUN']:
-                    gendered_words[lang_gender].add((token.text, token.lemma_, pos))
+                if pos in ['DET']:
+                    m = re.match(r'.*Gender=(\w*)', tag)
+                    if m:
+                        gendered_words[lang_gender].add((token.text, token.lemma_, pos))
 
     return gendered_words
 
@@ -68,7 +69,7 @@ def replace_words_in_docs(docs, mapping):
         else:
             # changed_docs.append(doc)
             pass
-    return  changed_docs
+    return changed_docs
 
 
 def get_gender_changed_docs(docs, lemma2words):
@@ -100,14 +101,14 @@ def get_replace_word_es(word, lemma, candidates):
     replace = None
     if len(candidates) == 1:
         logging.info(f'WARNING: Found one-to-one mapping between {candidates[0]} and {lemma}')
-    elif word.endswith('as'):
+    elif word.endswith('as') and lemma == word[:-1]:
         if lemma + 's' in candidates:
             replace = lemma + 's'
-    elif word.endswith('os'):
+    elif word.endswith('os') and lemma == word[:-1]:
         root = lemma[:-1]
         if root + 'as' in candidates:
             replace = root + 'as'
-    elif word.endswith('a'):
+    elif word.endswith('a') and lemma == word[:-1] + 'o':
         replace = lemma
     elif word.endswith('o'):
         root = lemma[:-1]
