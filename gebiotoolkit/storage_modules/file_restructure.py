@@ -41,7 +41,7 @@ def include_sentence(sens):
     return valid_sentence, name[:len(name) - 1]
 
 
-def store_sentences(filestore, person_sentences, lang=None, gender=None, name=None):
+def store_sentences(filestore, person_sentences, lang=None, gender=None, name=None, format=None):
     """
     Writes :param person_sentences in the given :param filestore:
     If :name is specified, the function assumes that
@@ -51,9 +51,7 @@ def store_sentences(filestore, person_sentences, lang=None, gender=None, name=No
     :param gender:
     :param name:
     """
-    if not name:
-        for sentence in person_sentences:
-            filestore.write()
+    format = format or 'xml'
     if format == 'xml':
         seg = 1
         try:
@@ -63,8 +61,10 @@ def store_sentences(filestore, person_sentences, lang=None, gender=None, name=No
         filestore.write(f'<doc docid="{name}" wpid="{idd}" language="{lang}"  gender="{gender}">\n')
         filestore.write(f'<title>{name}</title>\n')
 
-        for z in all_sentences:
-            filestore.write(f'<seg id="{str(seg)}">{z}<\\seg>\n')
+        for p_sentence in person_sentences:
+            filestore.write(f'<seg id="{str(seg)}">{p_sentence}<\\seg>\n')
             seg += 1
 
         filestore.write('</doc>\n')
+    else:
+        NotImplementedError('The only format currently supported is xml.')
