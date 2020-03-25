@@ -30,6 +30,7 @@ def store_sentences(sentences, en_doc, results_folder, person, source_language='
                         f.write(person + ' : ' + src_s + '\n')
             written_src = True
 
+
 def find_pronouns(filename):
     a = open(filename, 'r')
     text = a.readlines()

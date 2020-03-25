@@ -7,8 +7,8 @@ import sys
 import spacy
 
 sys.path.append(".")
-from .utils.constants import GENDERS, LANGUAGES, NLP_MODELS
-from .utils.regexp import RegExp
+from utils.constants import GENDERS, LANGUAGES, NLP_MODELS
+from utils.regexp import RegExp
 from gebiotoolkit.storage_modules.file_restructure import include_sentence, store_sentences
 
 
@@ -150,7 +150,7 @@ class DataDriver:
 
 def retrieve_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f,""--corpus_folder", dest='corpus_folder', help="paths to corpus data", default='biographies')
+    parser.add_argument("-f,""--corpus_folder", dest='corpus_folder', help="paths to corpus data", default='../gebiotoolkit/corpus_alignment/aligned')
     parser.add_argument("-l", "--languages", dest='languages', nargs='+', help="white-spaced languages you want to process the data on")
 
     return parser.parse_args()
@@ -161,7 +161,7 @@ def main():
 
     corpus_folder = args.corpus_folder
     languages = args.languages
-
+    languages = {'es', 'en'}
     dd = DataDriver(corpus_folder, languages=languages)
     # Generate files *.{filtered}.txt
     dd.save_sentences()

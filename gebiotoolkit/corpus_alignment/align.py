@@ -148,8 +148,8 @@ def main():
     encoder = generate_encoder(encoder_file)
     names = get_names_in_all_languages(corpus_folder, languages)
     c = 0
-    for person in names:
-        print(person)
+    for n, person in enumerate(names):
+        print(f'{n}: {person}')
         if "'" in person:
             print(f'single quote: {person}')
             c += 1

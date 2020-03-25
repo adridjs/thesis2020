@@ -41,6 +41,14 @@ Number of names that appear in both namelists.
 24675
 ```
 
+Number of lines after aligning.
+```
+~/thesis2020$ cat gebiotoolkit/corpus_alignment/aligned/en_she.txt | wc -l
+27012
+~/thesis2020$ cat gebiotoolkit/corpus_alignment/aligned/en_he.txt | wc -l
+47750
+```
+
 ## References
 
 For more information, please check https://arxiv.org/pdf/1912.04778.pdf
