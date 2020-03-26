@@ -30,7 +30,10 @@ class DataDriver:
 
     @staticmethod
     def _clean_sentence(model, txt):
-        return model(txt).doc.text_with_ws.split()
+        # return model(txt).doc.text_with_ws.split()
+        pattern = r'<(a|/a).*?>'
+        result = re.sub(pattern, "", txt)
+        return result
 
     def _load_model(self, language):
         """
@@ -161,7 +164,6 @@ def main():
 
     corpus_folder = args.corpus_folder
     languages = args.languages
-    languages = {'es', 'en'}
     dd = DataDriver(corpus_folder, languages=languages)
     # Generate files *.{filtered}.txt
     dd.save_sentences()

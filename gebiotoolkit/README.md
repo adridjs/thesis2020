@@ -41,7 +41,10 @@ Number of names that appear in both namelists.
 24675
 ```
 
-Number of lines after aligning.
+Number of lines after aligning. Take into account that for each person, there are 3 lines that don't contain
+sentences:
+*  `<doc>` and  `</doc>` (contains document metadata)  
+* `<title>`
 ```
 ~/thesis2020$ cat gebiotoolkit/corpus_alignment/aligned/en_she.txt | wc -l
 27012

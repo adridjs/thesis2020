@@ -35,13 +35,13 @@ def id_retriever(name, lan):
 
 
 def include_sentence(sens):
-    name = sens.split(':')[0]
+    name = sens.split(':')[0].strip()
     valid_sentence = re.sub(name + ': ', '', sens)
     valid_sentence = re.sub('\n', '', valid_sentence)
-    return valid_sentence, name[:len(name) - 1]
+    return valid_sentence, name
 
 
-def store_sentences(filestore, person_sentences, lang=None, gender=None, name=None, format=None):
+def store_sentences(filestore, name, person_sentences, lang=None, gender=None, format=None):
     """
     Writes :param person_sentences in the given :param filestore:
     If :name is specified, the function assumes that
