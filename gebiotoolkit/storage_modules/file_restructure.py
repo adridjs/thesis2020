@@ -36,7 +36,7 @@ def id_retriever(name, lan):
 
 def include_sentence(sens):
     name = sens.split(':')[0].strip()
-    valid_sentence = re.sub(name + ': ', '', sens)
+    valid_sentence = re.sub(name + ' : ', '', sens)
     valid_sentence = re.sub('\n', '', valid_sentence)
     return valid_sentence, name
 

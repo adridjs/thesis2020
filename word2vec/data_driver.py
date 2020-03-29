@@ -7,8 +7,8 @@ import sys
 import spacy
 
 sys.path.append(".")
-from utils.constants import GENDERS, LANGUAGES, NLP_MODELS
-from utils.regexp import RegExp
+from word2vec.utils.constants import GENDERS, LANGUAGES, NLP_MODELS
+from word2vec.utils.regexp import RegExp
 from gebiotoolkit.storage_modules.file_restructure import include_sentence, store_sentences
 
 
@@ -29,8 +29,7 @@ class DataDriver:
         self.nlp_model_mapping = NLP_MODELS
 
     @staticmethod
-    def _clean_sentence(model, txt):
-        # return model(txt).doc.text_with_ws.split()
+    def _clean_sentence(txt):
         pattern = r'<(a|/a).*?>'
         result = re.sub(pattern, "", txt)
         return result
@@ -73,6 +72,7 @@ class DataDriver:
         docs = defaultdict(list)
         least_docs_key = (None, 10 ** 6)
         for lang in self.languages:
+            nlp_model = self._load_model(language=lang)
             for gender in self.genders:
                 key = f'{lang}_{gender}'
                 filename = f'{self.corpus_folder}/{key}.filtered.txt'
@@ -80,7 +80,7 @@ class DataDriver:
                     lines = ' '.join(f.readlines())
                     for n, doc in enumerate(re.finditer(self.re.doc_wise, lines, re.UNICODE)):
                         name, sentence = doc.groups()
-                        docs[key].append(eval(sentence))
+                        docs[key].append([token.text for token in nlp_model(sentence)])
 
                     n_docs = len(docs[key])
                     if n_docs < least_docs_key[1]:
@@ -88,12 +88,13 @@ class DataDriver:
 
         return docs, least_docs_key
 
-    def _balance_dataset(self, docs, least_docs_value):
+    def _balance_dataset(self, docs, least_docs_value, seed=15):
         """
         Balances a dataset composed by :param docs by randomly deleting samples from a given key until it is equal to :param least_docs_value
         :param docs: Documents in the data set
         :type docs: dict[str, list]
         :param least_docs_value: least number of documents in the whole data set
+        :type
         """
         self.balanced_dataset = defaultdict(list)
         for lang in self.languages:
@@ -101,14 +102,13 @@ class DataDriver:
                 key = f'{lang}_{gender}'
                 length = len(docs[key])
                 n_delete = length - least_docs_value
-                if n_delete == 0:
+                if n_delete != 0:
+                    print(f'Number of docs for gender: {gender} in language: {lang} -> {length}. Randomly deleting {n_delete} '
+                          f'documents to have a uniform distribution between genders')
+                    sample = random.sample(docs[key], least_docs_value)  # For reproducibility purpose
+                    self.balanced_dataset[key] = sample
+                else:
                     self.balanced_dataset[key] = docs[key]
-                    continue
-
-                print(f'Number of docs for gender: {gender} in language: {lang} -> {length}')
-                print(f'Randomly deleting {n_delete} documents to have a uniform distribution between genders: {lang} -> {length}')
-                sample = random.sample(docs[key], least_docs_value)
-                self.balanced_dataset[key] = sample
 
     def get_balanced_dataset(self):
         """

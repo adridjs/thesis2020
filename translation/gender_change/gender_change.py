@@ -98,6 +98,7 @@ def get_replace_word_es(word, lemma, candidates):
     :param candidates:
     :return:
     """
+
     replace = None
     if len(candidates) == 1:
         logging.info(f'WARNING: Found one-to-one mapping between {candidates[0]} and {lemma}')
@@ -142,7 +143,7 @@ def get_replace_words_mapping(words_to_replace, language, lemma2words):
                 logging.info(f'Couldn\'t find {lemma} from word {word} in l2w.')
         elif language == 'en':
             # TODO
-            # get_replace_word_en
+
             pass
 
     return mapping
@@ -154,7 +155,7 @@ if __name__ == '__main__':
     gender_change_logs = 'gender_change.log'
     gender_change_output = ''
     l2w = get_lemma2words(f, languages)
-    dd = DataDriver('../word2vec/biographies/', languages=languages)
+    dd = DataDriver('../word2vec/biographies', languages=languages)
     docs, _ = dd._parse_filtered_docs()
     # TODO: Insert this DataDriver.get_balanced_dataset() in order to have a uniform distribution of sentences between genders.
     changed_docs = get_gender_changed_docs(docs, l2w)

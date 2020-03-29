@@ -10,10 +10,10 @@ class Word2VecSettings:
     Settings for the Word2VecTrainer class.
     :param languages: set of languages to get the embeddings from.
     """
-    def __init__(self, kwargs):
+    def __init__(self, **kwargs):
         self.save_binary = kwargs.get('save_binary', False)
         self.min_count = kwargs.get('min_count', 5)
-        self.model_filename = kwargs.get('model_filename', f'word2vec/biographies_word2vec_{self.min_count}')
+        self.model_filename = kwargs.get('model_filename', f'biographies_word2vec_{self.min_count}.txt')
         self.input_folder = kwargs.get('input_folder', 'biographies/')
 
 
@@ -24,23 +24,21 @@ class Word2VecTrainer:
     :param n_dim:
     :param
     """
-    def __init__(self, languages, n_dim=512, epochs=20, **kwargs):
+    def __init__(self, language, n_dim=512, epochs=20, **kwargs):
         self.n_dim = n_dim
         self.epochs = epochs
         self.settings = Word2VecSettings(**kwargs)
-        self.data_driver = DataDriver(self.settings.input_folder, languages)
+        self.data_driver = DataDriver(self.settings.input_folder, {language})
 
     def train(self):
         self.data_driver.get_balanced_dataset()
         joint_genders_dataset = [sentence for key_based in self.data_driver.balanced_dataset.values() for sentence in key_based]
-        model = Word2Vec(size=self.n_dim, min_count=self.settings.min_count)
-
+        model = Word2Vec(min_count=self.settings.min_count, size=self.n_dim, window=5)
         model.build_vocab(joint_genders_dataset)
         # train model
-        model.train(joint_genders_dataset, total_examples=model.corpus_count, epochs=self.epochs)
-
+        model.train(joint_genders_dataset, total_examples=model.corpus_count, epochs=model.iter)
         # save vectors
-        model.wv.save_word2vec_format(f'{self.settings.model_filename}.txt', binary=False)
+        model.wv.save_word2vec_format(f'{self.settings.model_filename}', binary=False)
 
         if self.settings.save_binary:
             model.save(f'{self.settings.model_filename}.bin')
@@ -48,9 +46,9 @@ class Word2VecTrainer:
 
 def retrieve_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-l", "--languages", dest='languages', nargs='+', help="white-spaced languages you want to process the data on")
+    parser.add_argument("-l", "--language", dest='language', help="language to train the embeddings on", default='es')
     parser.add_argument("-i,""--input_folder", dest='input_folder', help="path to the folder containing the generated xmls",
-                        default='word2vec/biographies')
+                        default='biographies')
     parser.add_argument("-s", "--save_binary", dest='save_binary', help="if set to true, the model will be saved as bytes.", default=False)
     parser.add_argument("-c", "--min_count", dest='min_count', help='minimum number of occurrences to add a word to the vocabulary.', default=5)
 
@@ -61,11 +59,11 @@ def main():
     args = retrieve_args()
 
     input_folder = args.input_folder
-    languages = args.languages
+    language = args.language
     save_binary = args.save_binary
     min_count = args.min_count
 
-    trainer = Word2VecTrainer(languages, input_folder=input_folder, save_binary=save_binary, min_count=min_count)
+    trainer = Word2VecTrainer(language, input_folder=input_folder, save_binary=save_binary, min_count=min_count)
     trainer.train()
 
 
