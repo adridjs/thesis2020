@@ -12,8 +12,9 @@ class Word2VecSettings:
     """
     def __init__(self, **kwargs):
         self.save_binary = kwargs.get('save_binary', False)
+        self.language = kwargs.get('language')
         self.min_count = kwargs.get('min_count', 5)
-        self.model_filename = kwargs.get('model_filename', f'biographies_word2vec_{self.min_count}.txt')
+        self.model_filename = kwargs.get('model_filename', f'{self.language}_word2vec_{self.min_count}')
         self.input_folder = kwargs.get('input_folder', 'biographies/')
 
 
@@ -24,11 +25,11 @@ class Word2VecTrainer:
     :param n_dim:
     :param
     """
-    def __init__(self, language, n_dim=512, epochs=20, **kwargs):
+    def __init__(self, n_dim=512, epochs=20, **kwargs):
         self.n_dim = n_dim
         self.epochs = epochs
         self.settings = Word2VecSettings(**kwargs)
-        self.data_driver = DataDriver(self.settings.input_folder, {language})
+        self.data_driver = DataDriver(self.settings.input_folder, {self.settings.language})
 
     def train(self):
         self.data_driver.get_balanced_dataset()
@@ -38,7 +39,7 @@ class Word2VecTrainer:
         # train model
         model.train(joint_genders_dataset, total_examples=model.corpus_count, epochs=model.iter)
         # save vectors
-        model.wv.save_word2vec_format(f'{self.settings.model_filename}', binary=False)
+        model.wv.save_word2vec_format(f'{self.settings.model_filename}.txt', binary=False)
 
         if self.settings.save_binary:
             model.save(f'{self.settings.model_filename}.bin')
@@ -46,7 +47,7 @@ class Word2VecTrainer:
 
 def retrieve_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-l", "--language", dest='language', help="language to train the embeddings on", default='es')
+    parser.add_argument("-l", "--language", dest='language', help="language to train the embeddings on", default='en')
     parser.add_argument("-i,""--input_folder", dest='input_folder', help="path to the folder containing the generated xmls",
                         default='biographies')
     parser.add_argument("-s", "--save_binary", dest='save_binary', help="if set to true, the model will be saved as bytes.", default=False)
@@ -63,7 +64,7 @@ def main():
     save_binary = args.save_binary
     min_count = args.min_count
 
-    trainer = Word2VecTrainer(language, input_folder=input_folder, save_binary=save_binary, min_count=min_count)
+    trainer = Word2VecTrainer(language=language, input_folder=input_folder, save_binary=save_binary, min_count=min_count)
     trainer.train()
 
 

@@ -6,8 +6,9 @@ from word2vec.embeddings import Embeddings
 
 class Analysis:
     def __init__(self, language):
-        self.embeddings = Embeddings(f'word2vec/{language}_word2vec_5.txt')
+        self.embeddings = Embeddings(f'../{language}_word2vec_5.txt')
         self.embeddings = self.embeddings()
+        self.as_dict = self.embeddings.as_dict
 
     @staticmethod
     def _plot_gendered_vectors(pair, gendered_vectors, threshold=None):
@@ -33,8 +34,6 @@ class Analysis:
     def analogy(self, a, b, c):
         """
         a is to b as c is to ?
-        >>> self.embeddings.most_similar_cosmul(positive=['Man', 'Woman'], negative=['King'])
-        >>> 'Queen'
         :return: most similar word to the analogy
         """
         result = self.embeddings.most_similar_cosmul(positive=[a, c], negative=[b])
@@ -53,7 +52,7 @@ class Analysis:
         return self.embeddings.most_similar(positive=[word], topn=n)
 
     def plot_gendered_vectors_by_pairs(self, language):
-        professions_filename = f'word2vec/{language}_professions.txt'
+        professions_filename = f'../data/{language}_professions.txt'
         print(f'Vocabulary size: {len(self.embeddings.vectors)}')
 
         # definitional pairs
@@ -61,13 +60,13 @@ class Analysis:
 
         # Based on arxiv:1903.03862v2
         for masc, fem in pairs:
-            gender_vector = self.embeddings[masc] - self.embeddings[fem]
+            gender_vector = self.as_dict[masc] - self.as_dict[fem]
             # cos(u,v) =u·v / ‖u‖‖v‖
             # cos(w1, w2) = w1·w2 if embeddings are normalized
             professions = list(map(str.strip, open(professions_filename).readlines()))
-            profession_embeddings = {token: emb for token, emb in self.embeddings.items() if token in professions}
+            profession_embeddings = {token: emb for token, emb in self.as_dict.items() if token in professions}
             print(f'Number of professions in vocabulary: {len(profession_embeddings)}')
-            cos_similarity = [(word, np.dot(self.embeddings[word], gender_vector)) for word in profession_embeddings]
+            cos_similarity = [(word, np.dot(self.as_dict[word], gender_vector)) for word in profession_embeddings]
 
             gendered_words = sorted(cos_similarity, key=lambda x: x[1])
             for th in [0.05, 0.1, 0.15, 0.2]:
