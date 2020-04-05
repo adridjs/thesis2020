@@ -47,7 +47,7 @@ class Word2VecTrainer:
 
 def retrieve_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-l", "--language", dest='language', help="language to train the embeddings on", default='en')
+    parser.add_argument("-l", "--language", dest='language', help="language to train the embeddings on", required=True)
     parser.add_argument("-i,""--input_folder", dest='input_folder', help="path to the folder containing the generated xmls",
                         default='biographies')
     parser.add_argument("-s", "--save_binary", dest='save_binary', help="if set to true, the model will be saved as bytes.", default=False)

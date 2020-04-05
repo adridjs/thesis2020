@@ -10,9 +10,15 @@ word2vec/data_driver.py -l es en -f ../gebiotoolkit/corpus_alignment/aligned/
 You can either specify the languages via command line with the `-l` argument, or let the script pull the desired
  languages from the `LANGUAGES` set defined  in `word2vec/utils/constants.py` 
 
-## Data
-We could get gendered pairs in Spanish from Ayuntamiento de Málaga. That list of pairs can increase throughout time, 
-and don't hesitate doing it.
-## References
-* List of professions in Spanish: Listado de profesiones Ayuntamiento de Málaga
-* List of professions in English: [Spreadsheet](https://docs.google.com/spreadsheets/d/1b85wH2dr3QIXdwPjOjebgCC4ZfJ7ghCjwkM1I-uXbs8/) 
+## Trainer
+Now that we have filtered our sentences and generated the xmls, we can train our word vectors model. The balanced
+ dataset is generated in runtime, you could also save one sample generated in an earlier execution to have a unique 
+  trainset.
+```
+python3 trainer.py --language en --input_folder biographies --min_count 5 
+```
+    parser.add_argument("-i", "--input_folder", dest='input_folder', help="path to the folder containing the generated
+     xmls",
+                        default='biographies')
+    parser.add_argument("-s", "--save_binary", dest='save_binary', help="if set to true, the model will be saved as bytes.", default=False)
+    parser.add_argument("-c", "--min_count", dest='min_count', help='minimum number of occurrences to add a word to the vocabulary.', default=5)

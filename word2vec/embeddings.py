@@ -10,7 +10,6 @@ class Embeddings:
     def __call__(self, *args, **kwargs):
         self.kv = KeyedVectors.load_word2vec_format(self.embeddings_filename, binary=kwargs.get('binary', False), encoding='utf-8')
 
-    @property
     def as_dict(self):
         """
         Normalizes the L2 norm of vectors
