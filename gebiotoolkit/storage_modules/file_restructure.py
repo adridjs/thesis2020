@@ -34,14 +34,19 @@ def id_retriever(name, lan):
     return idd
 
 
-def include_sentence(sens):
-    name = sens.split(':')[0].strip()
-    valid_sentence = re.sub(name + ' : ', '', sens)
+def parse_sentence(sentences):
+    """
+
+    :param sentences:
+    :return:
+    """
+    name = sentences.split(':')[0].strip()
+    valid_sentence = re.sub(name + ' : ', '', sentences)
     valid_sentence = re.sub('\n', '', valid_sentence)
     return valid_sentence, name
 
 
-def store_sentences(filestore, name, person_sentences, lang=None, gender=None, format=None):
+def save_xml(filestore, name, person_sentences, lang=None, gender=None):
     """
     Writes :param person_sentences in the given :param filestore:
     If :name is specified, the function assumes that
@@ -51,20 +56,17 @@ def store_sentences(filestore, name, person_sentences, lang=None, gender=None, f
     :param gender:
     :param name:
     """
-    format = format or 'xml'
-    if format == 'xml':
-        seg = 1
-        try:
-            idd = id_retriever(name, lang)
-        except:
-            idd = None
-        filestore.write(f'<doc docid="{name}" wpid="{idd}" language="{lang}"  gender="{gender}">\n')
-        filestore.write(f'<title>{name}</title>\n')
 
-        for p_sentence in person_sentences:
-            filestore.write(f'<seg id="{str(seg)}">{p_sentence}<\\seg>\n')
-            seg += 1
+    seg = 1
+    try:
+        idd = id_retriever(name, lang)
+    except:
+        idd = None
+    filestore.write(f'<doc docid="{name}" wpid="{idd}" language="{lang}"  gender="{gender}">\n')
+    filestore.write(f'<title>{name}</title>\n')
 
-        filestore.write('</doc>\n')
-    else:
-        NotImplementedError('The only format currently supported is xml.')
+    for p_sentence in person_sentences:
+        filestore.write(f'<seg id="{str(seg)}">{p_sentence}<\\seg>\n')
+        seg += 1
+
+    filestore.write('</doc>\n')

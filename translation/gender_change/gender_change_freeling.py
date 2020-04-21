@@ -79,8 +79,8 @@ def retrieve_args():
         description='Use FreeLing library in order to change the morphological gender of the given text file.')
     parser.add_argument('-cl', '--command-line',
                         action='store_true',
-                        help='If set, it will get its input from command line. Usage: gender_change.py < text_file.txt')
-    parser.add_argument('-f', '--file', help='text file to analyze', default='../word2vec/biographies/en_he.filtered.txt')
+                        help='If set, it will get its input from command line. Usage: invert_genders.py < text_file.txt')
+    parser.add_argument('-f', '--file', help='text file to analyze', default='../word2vec/biographies/en_he.filtered.xml')
     args = parser.parse_args()
     return args
 
@@ -169,11 +169,11 @@ def analyze_sentence(sentence, tokenizer, splitter, sess_id, morph_analyzer, tag
     """
     token_str = tokenizer.tokenize(sentence)
     ls = splitter.split(sess_id, token_str, False)
-    #ls = morph_analyzer.analyze(ls)
+    ls = morph_analyzer.analyze(ls)
     ls = tagger.analyze(ls)
-    #ls = sense_annotator.analyze(ls)
-    #ls = parser.analyze(ls)
-    #ls = dependencies.analyze(ls)
+    ls = sense_annotator.analyze(ls)
+    ls = parser.analyze(ls)
+    ls = dependencies.analyze(ls)
 
     # iterate over each sentence and output the result
     for s in ls:

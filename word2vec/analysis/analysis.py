@@ -31,13 +31,15 @@ class Analysis:
         :param threshold:
         :rtype
         """
-        profession, similarity, gender_diff = list(zip(*[(prof, values['cos_similarity'], len(values['n_male']) - len(values['n_female']))
-                                                         for prof, values in data.items()]))
+        colors = {'male': 'green', 'female': 'blue', 'x': 'black'}
+        profession, similarity, gender_diff, gender = \
+            list(zip(*[(prof, values['cos_similarity'], len(values['n_male']) - len(values['n_female']), values['gender'])
+                                                    for prof, values in data.items()]))
         source = ColumnDataSource(data=dict(similarity=similarity, difference=gender_diff, words=profession))
         p = figure(tools=[HoverTool(tooltips=[('Word', '@words'),
                                               ('Difference', '@difference'),
                                               ('Similarity', '@similarity')])])
-        p.circle(x='similarity', y='difference', size=8, source=source, line_color="black", fill_alpha=0.8)
+        p.circle(x='similarity', y='difference', size=8, source=source, line_color="black", fill_alpha=0.8, color='gender')
         labels = LabelSet(x="similarity", y="difference", text="words", y_offset=8,
                           text_font_size="8pt", text_color="#555555",
                           source=source, text_align='center')
@@ -70,10 +72,16 @@ class Analysis:
         data = dict()
         for prof in self.profession_embeddings:
             neighbors = self.n_neighbors(prof, n_neighbors)
+            if prof in self.stereo_male_words:
+                gender = 'male'
+            elif prof in self.stereo_female_words:
+                gender = 'female'
+            else:
+                gender = None
             n_male = [neigh for neigh in neighbors if neigh[0] in self.stereo_male_words]
             n_female = [neigh for neigh in neighbors if neigh[0] in self.stereo_female_words]
             cos_similarity = np.dot(self.as_dict[prof], gender_vector)
-            data.update({prof: dict(neighbors=neighbors, n_male=n_male, n_female=n_female, cos_similarity=cos_similarity)})
+            data.update({prof: dict(neighbors=neighbors, n_male=n_male, n_female=n_female, cos_similarity=cos_similarity, gender=gender)})
 
         return data
 

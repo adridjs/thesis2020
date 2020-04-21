@@ -62,7 +62,7 @@ def main():
     input_folder = args.input_folder
     language = args.language
     save_binary = args.save_binary
-    min_count = args.min_count
+    min_count = int(args.min_count)
 
     trainer = Word2VecTrainer(language=language, input_folder=input_folder, save_binary=save_binary, min_count=min_count)
     trainer.train()

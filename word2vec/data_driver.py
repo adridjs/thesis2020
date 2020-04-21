@@ -9,13 +9,14 @@ import spacy
 sys.path.append(".")
 from word2vec.utils.constants import GENDERS, LANGUAGES, NLP_MODELS
 from word2vec.utils.regexp import RegExp
-from gebiotoolkit.storage_modules.file_restructure import include_sentence, store_sentences
+from gebiotoolkit.storage_modules.file_restructure import parse_sentence, save_xml
 
 
 class DataDriver:
     """
     :param corpus_folder: Path to the folder where the aligned corpus is stored
     :type corpus_folder: str
+    :param
     :param languages: Languages from which to extract data from :param corpus_folder:
     :type languages: set
     :param genders: Genders from which to extract data from :param corpus_folder:
@@ -49,7 +50,7 @@ class DataDriver:
 
         return spacy.load(model_name)
 
-    def _get_filenames(self):
+    def _get_filenames(self, format='xml'):
         """
         Helper function to retrieve input and output filenames based on :param languages and :param genders key sets.
         :return: An iterator of triples following (key, filename, out_filename)
@@ -60,7 +61,7 @@ class DataDriver:
             for gender in GENDERS:
                 key = f'{lang}_{gender}'
                 filename = f'{self.corpus_folder}/{key}.txt'
-                out_filename = f'{self.corpus_folder}/{key}.filtered.txt'
+                out_filename = f'{self.corpus_folder}/{key}.filtered.{format}'
                 yield key, filename, out_filename
 
     def _parse_filtered_docs(self):
@@ -96,6 +97,7 @@ class DataDriver:
         :param least_docs_value: least number of documents in the whole data set
         :type
         """
+        random.seed(seed)
         self.balanced_dataset = defaultdict(list)
         for lang in self.languages:
             for gender in GENDERS:
@@ -121,34 +123,29 @@ class DataDriver:
         # Balance dataset based on least_docs_val.
         self._balance_dataset(docs, least_docs_value=least_docs_value)
 
-    def save_sentences(self):
+    def save_sentences(self, format='xml'):
         """
         Saves a list of a list of words for the specified file names constructed by :param corpus_folder and :param languages
         Each sublist is a sentence.
         :return:
         """
-        for key, file_name, out_file_name in self._get_filenames():
+
+        for key, file_name, out_file_name in self._get_filenames(format=format):
             lang, gender = file_name.split('/')[-1].split('_')
             gender = gender.split('.')[0]
-            model = self._load_model(lang)
-            out_file = open(out_file_name, 'w+')
-            person_sentences_list = list()
-            for n, line in enumerate(open(file_name)):
-                line = line.strip().lower()
-                line, current_name = include_sentence(line)
-                if n == 0:
-                    last_name = current_name
+            with open(out_file_name, 'w+') as out_file:
+                sentences_by_person = defaultdict(list)
+                for line in open(file_name):
+                    line = line.strip().lower()
+                    sentence, name = parse_sentence(line)
+                    cleaned_sentence = self._clean_sentence(sentence)
+                    sentences_by_person[name].append(cleaned_sentence)
 
-                if current_name != last_name:
-                    store_sentences(out_file, last_name, person_sentences_list, lang, gender)
-                    last_name = current_name
-                    person_sentences_list = list()
-
-                person_sentence_line = self._clean_sentence(model, line)
-                if len(person_sentence_line) > 1:
-                    person_sentences_list.append(person_sentence_line)
-
-            out_file.close()
+                for name, sentences in sentences_by_person.items():
+                    if format == 'txt':
+                        out_file.write('\n'.join(sentences))
+                    elif format == 'xml':
+                        save_xml(out_file, name, sentences, lang, gender)
 
 
 def retrieve_args():
@@ -165,10 +162,8 @@ def main():
     corpus_folder = args.corpus_folder
     languages = args.languages
     dd = DataDriver(corpus_folder, languages=languages)
-    # Generate files *.{filtered}.txt
-    dd.save_sentences()
-    dd.get_balanced_dataset()
-    print(f'{key}: {sentences[:10]}\n' for key, sentences in dd.balanced_dataset.items())
+    # Generate files *.filtered.txt
+    dd.save_sentences(format='txt')
 
 
 if __name__ == '__main__':

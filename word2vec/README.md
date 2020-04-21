@@ -12,13 +12,8 @@ You can either specify the languages via command line with the `-l` argument, or
 
 ## Trainer
 Now that we have filtered our sentences and generated the xmls, we can train our word vectors model. The balanced
- dataset is generated in runtime, you could also save one sample generated in an earlier execution to have a unique 
+ dataset is generated at runtime, you could also save one sample generated in an earlier execution to have a unique 
   trainset.
 ```
 python3 trainer.py --language en --input_folder biographies --min_count 5 
 ```
-    parser.add_argument("-i", "--input_folder", dest='input_folder', help="path to the folder containing the generated
-     xmls",
-                        default='biographies')
-    parser.add_argument("-s", "--save_binary", dest='save_binary', help="if set to true, the model will be saved as bytes.", default=False)
-    parser.add_argument("-c", "--min_count", dest='min_count', help='minimum number of occurrences to add a word to the vocabulary.', default=5)
