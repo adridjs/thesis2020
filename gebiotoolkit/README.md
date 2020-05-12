@@ -11,7 +11,7 @@ While our toolkit is able to customize the languages for which we are extracting
 
 ## Usage
 
-### Corpus extractor
+### Corpus Extraction
 
 _Change domain_
 
@@ -42,7 +42,19 @@ Number of names that appear in both namelists.
 ```
 24675
 ```
+### Corpus Alignment
+In order to align the extracted sentences from Wikipedia, we need 
+to provide a white-spaced list of languages via the `-l` argument; 
+a corpus_folder, `-f`; a save path, `-s`; and the path to the LASER 
+repository. LASER will normally reside in your home folder, that is, 
+`$LASER='$HOME/LASER'`    
 
+    python 3 align.py \
+    -l [LANGUAGES] \
+    -f ../corpus_extraction/wiki
+    -s aligned/
+    -e $LASER/models/bilstm.93langs.2018-12-26.pt
+   
 Number of lines after aligning. Take into account that for each person, there are 3 lines that don't contain
 sentences:
 *  `<doc>` and  `</doc>` (contains document metadata)  

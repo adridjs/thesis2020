@@ -160,7 +160,7 @@ def main():
         if sentences:
             store_sentences(sentences, person_filenames['en'], results_folder, person, source_language='en')
 
-    print(f'single quote n: c')
+    print(f'single quote n:  {c}')
 
 
 if __name__ == '__main__':

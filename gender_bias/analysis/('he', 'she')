@@ -1,0 +1,85 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+    
+      <meta charset="utf-8">
+      <title>Bokeh Plot</title>
+      
+      
+        
+          
+        
+        
+          
+        <script type="text/javascript" src="https://cdn.pydata.org/bokeh/release/bokeh-1.4.0.min.js"></script>
+        <script type="text/javascript">
+            Bokeh.set_log_level("info");
+        </script>
+        
+      
+      
+    
+  </head>
+  
+  
+  <body>
+    
+      
+        
+          
+          
+            
+              <div class="bk-root" id="24e824fa-7c56-4418-8de4-f81f4c32fe21" data-root-id="1003"></div>
+            
+          
+        
+      
+      
+        <script type="application/json" id="1117">
+          {"46089e95-e73a-46a0-ba78-73c7ed471ce2":{"roots":{"references":[{"attributes":{"dimension":1,"ticker":{"id":"1020","type":"BasicTicker"}},"id":"1023","type":"Grid"},{"attributes":{},"id":"1036","type":"BasicTickFormatter"},{"attributes":{},"id":"1012","type":"LinearScale"},{"attributes":{"formatter":{"id":"1036","type":"BasicTickFormatter"},"ticker":{"id":"1015","type":"BasicTicker"}},"id":"1014","type":"LinearAxis"},{"attributes":{},"id":"1038","type":"Selection"},{"attributes":{},"id":"1020","type":"BasicTicker"},{"attributes":{},"id":"1034","type":"BasicTickFormatter"},{"attributes":{"active_drag":"auto","active_inspect":"auto","active_multi":null,"active_scroll":"auto","active_tap":"auto","tools":[{"id":"1002","type":"HoverTool"}]},"id":"1024","type":"Toolbar"},{"attributes":{"below":[{"id":"1014","type":"LinearAxis"}],"center":[{"id":"1018","type":"Grid"},{"id":"1023","type":"Grid"},{"id":"1031","type":"LabelSet"}],"left":[{"id":"1019","type":"LinearAxis"}],"renderers":[{"id":"1029","type":"GlyphRenderer"}],"title":{"id":"1004","type":"Title"},"title_location":"below","toolbar":{"id":"1024","type":"Toolbar"},"toolbar_location":"above","x_range":{"id":"1006","type":"DataRange1d"},"x_scale":{"id":"1010","type":"LinearScale"},"y_range":{"id":"1008","type":"DataRange1d"},"y_scale":{"id":"1012","type":"LinearScale"}},"id":"1003","subtype":"Figure","type":"Plot"},{"attributes":{},"id":"1015","type":"BasicTicker"},{"attributes":{"text":"Words with gender diff != 0 in ('he', 'she') projection"},"id":"1004","type":"Title"},{"attributes":{"callback":null},"id":"1006","type":"DataRange1d"},{"attributes":{"callback":null,"tooltips":[["Word","@words"],["Difference","@difference"],["Similarity","@similarity"]]},"id":"1002","type":"HoverTool"},{"attributes":{"source":{"id":"1001","type":"ColumnDataSource"},"text":{"field":"words"},"text_align":"center","text_color":{"value":"#555555"},"text_font_size":{"value":"8pt"},"x":{"field":"similarity"},"y":{"field":"difference"},"y_offset":{"value":8}},"id":"1031","type":"LabelSet"},{"attributes":{"fill_alpha":{"value":0.8},"fill_color":{"value":"#1f77b4"},"size":{"units":"screen","value":8},"x":{"field":"similarity"},"y":{"field":"difference"}},"id":"1027","type":"Circle"},{"attributes":{"fill_alpha":{"value":0.1},"fill_color":{"value":"#1f77b4"},"line_alpha":{"value":0.1},"line_color":{"value":"#1f77b4"},"size":{"units":"screen","value":8},"x":{"field":"similarity"},"y":{"field":"difference"}},"id":"1028","type":"Circle"},{"attributes":{"callback":null},"id":"1008","type":"DataRange1d"},{"attributes":{"ticker":{"id":"1015","type":"BasicTicker"}},"id":"1018","type":"Grid"},{"attributes":{"data_source":{"id":"1001","type":"ColumnDataSource"},"glyph":{"id":"1027","type":"Circle"},"hover_glyph":null,"muted_glyph":null,"nonselection_glyph":{"id":"1028","type":"Circle"},"selection_glyph":null,"view":{"id":"1030","type":"CDSView"}},"id":"1029","type":"GlyphRenderer"},{"attributes":{},"id":"1039","type":"UnionRenderers"},{"attributes":{},"id":"1010","type":"LinearScale"},{"attributes":{"formatter":{"id":"1034","type":"BasicTickFormatter"},"ticker":{"id":"1020","type":"BasicTicker"}},"id":"1019","type":"LinearAxis"},{"attributes":{"callback":null,"data":{"difference":[0.1,0.1,0.1,0.1,-0.1,-0.1,-0.1,-0.1,0.1,-0.1,-0.1,-0.1,0.1,-0.2,-0.1,-0.1,-0.1,0.1,-0.1,0.1,0.1,-0.2,-0.1,0.1,0.1,-0.1,-0.1,0.1,0.2,-0.1,-0.1,-0.1,-0.1,-0.1,0.1,0.1,-0.1,-0.1,-0.1,0.1,0.1,-0.1,0.1,-0.1,0.1,0.1,0.2,-0.1,-0.1,-0.1],"similarity":[0.005440827459096909,-0.07624506950378418,-0.025326024740934372,-0.015855135396122932,-0.051990628242492676,-0.03976350277662277,-0.001729791983962059,-0.014751128852367401,-0.025501444935798645,-0.030799362808465958,-0.00574758555740118,-0.025087866932153702,-0.012802787125110626,-0.02080756612122059,-0.07015250623226166,-0.04933991655707359,-0.030143607407808304,-0.013548369519412518,-0.03281017765402794,-0.00832776166498661,-0.02662578970193863,-0.020313400775194168,-0.04730088636279106,-0.010912412777543068,-0.013756891712546349,-0.034524161368608475,-0.044316817075014114,-0.017296910285949707,-0.011894657276570797,-0.029225051403045654,-0.05017310380935669,-0.041133344173431396,-0.02716132439672947,-0.03159425035119057,-0.023959781974554062,-0.03065257892012596,-0.06125042214989662,-0.008304839953780174,-0.009185465052723885,-0.015545090660452843,-0.01747030019760132,-0.022410798817873,-0.02983074262738228,-0.037736259400844574,-0.01940789446234703,-0.010809218510985374,-0.009358087554574013,-0.00959520973265171,-0.034016113728284836,-0.0033875226508826017],"words":["president","director","actress","minister","writer","artist","character","actor","secretary","ambassador","captain","teenager","drummer","senator","researcher","principal","dean","citizen","vocalist","businessman","carpenter","nurse","columnist","commander","boss","playwright","analyst","physician","farmer","illustrator","commentator","educator","violinist","chemist","sculptor","councilor","counselor","soldier","therapist","diplomat","homemaker","inventor","dentist","programmer","maid","gangster","organist","hairdresser","congressman","psychiatrist"]},"selected":{"id":"1038","type":"Selection"},"selection_policy":{"id":"1039","type":"UnionRenderers"}},"id":"1001","type":"ColumnDataSource"},{"attributes":{"source":{"id":"1001","type":"ColumnDataSource"}},"id":"1030","type":"CDSView"}],"root_ids":["1003"]},"title":"Bokeh Application","version":"1.4.0"}}
+        </script>
+        <script type="text/javascript">
+          (function() {
+            var fn = function() {
+              Bokeh.safely(function() {
+                (function(root) {
+                  function embed_document(root) {
+                    
+                  var docs_json = document.getElementById('1117').textContent;
+                  var render_items = [{"docid":"46089e95-e73a-46a0-ba78-73c7ed471ce2","roots":{"1003":"24e824fa-7c56-4418-8de4-f81f4c32fe21"}}];
+                  root.Bokeh.embed.embed_items(docs_json, render_items);
+                
+                  }
+                  if (root.Bokeh !== undefined) {
+                    embed_document(root);
+                  } else {
+                    var attempts = 0;
+                    var timer = setInterval(function(root) {
+                      if (root.Bokeh !== undefined) {
+                        clearInterval(timer);
+                        embed_document(root);
+                      } else {
+                        attempts++;
+                        if (attempts > 100) {
+                          clearInterval(timer);
+                          console.log("Bokeh: ERROR: Unable to run BokehJS code because BokehJS library is missing");
+                        }
+                      }
+                    }, 10, root)
+                  }
+                })(window);
+              });
+            };
+            if (document.readyState != "loading") fn();
+            else document.addEventListener("DOMContentLoaded", fn);
+          })();
+        </script>
+    
+  </body>
+  
+</html>

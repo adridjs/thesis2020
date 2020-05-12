@@ -3,7 +3,7 @@ import os
 import pyfreeling
 import sys
 
-from word2vec.data_driver import DataDriver
+from gender_bias.data_driver import DataDriver
 
 
 def print_tree(ptree, depth):
@@ -80,7 +80,7 @@ def retrieve_args():
     parser.add_argument('-cl', '--command-line',
                         action='store_true',
                         help='If set, it will get its input from command line. Usage: invert_genders.py < text_file.txt')
-    parser.add_argument('-f', '--file', help='text file to analyze', default='../word2vec/biographies/en_he.filtered.xml')
+    parser.add_argument('-f', '--file', help='text file to analyze', default='../gender_bias/biographies/en_he.filtered.xml')
     args = parser.parse_args()
     return args
 
@@ -144,8 +144,8 @@ def main():
         while line:
             analyze_sentence(line, tokenizer, splitter, sess_id, morph_analyzer, tagger, sense_annotator, parser, dependencies)
     else:
-        dd = DataDriver('../word2vec/biographies/', languages={'es'})
-        docs, _ = dd._parse_filtered_docs()
+        dd = DataDriver('../gender_bias/biographies/', languages={'es'})
+        docs, _ = dd._parse_biographies()
         sentences_list = docs['es_he']
         # for line in open(args.file).readlines():
         for sentence in sentences_list:
