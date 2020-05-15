@@ -34,7 +34,7 @@ class Word2VecTrainer:
     def train(self, language, biographies_dataset=None):
 
         if biographies_dataset:
-            self.data_driver.get_balanced_dataset()
+            self.data_driver._get_balanced_corpus()
             sentences = [sentence for key_based in self.data_driver.balanced_dataset.values() for sentence in key_based if language in key_based]
         else:
             sentences = open(f'../translation/domain_adaptation/data/corpus.clean.{language}').readlines()

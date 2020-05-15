@@ -1,15 +1,15 @@
-import argparse
 import os
 import random
 
+from gender_bias.data_driver import DataDriver
 from gender_bias.utils.constants import LANGUAGES, GENDERS
 
 
-class MFTDatasetGenerator:
+class MFTGenerator:
     """
 
     """
-    def __init__(self, corpus_folder, train_ratio=None, languages=None, genders=None, sampling_probs=None, prefixes=None):
+    def __init__(self, corpus_folder, save_dir=None, train_ratio=None, languages=None, genders=None, sampling_probs=None, prefixes=None):
         """
 
         :param corpus_folder:
@@ -28,46 +28,7 @@ class MFTDatasetGenerator:
         self.genders = genders or GENDERS
         self.prefixes = prefixes or {'train': 'corpus.tc', 'test': 'test', 'dev': 'dev'}
         self.datasets = {}
-
-    def load_biographies_corpus(self, language):
-        """
-
-        :param language:
-        :return:
-        """
-        fn = os.path.join(self.corpus_folder, f'biographies.corpus.tc.{language}')
-        return open(fn).readlines()
-
-    def load_balanced_corpus(self, language):
-        """
-
-        :param language:
-        :return:
-        """
-        fn = os.path.join(self.corpus_folder, f'balanced.corpus.tc.{language}')
-        return open(fn).readlines()
-
-    def load_original_corpus(self, language):
-        """
-
-        :param language:
-        :return:
-        """
-        fn = os.path.join(self.corpus_folder, f'corpus.clean.{language}')
-        return open(fn).readlines()
-
-    def merge_gender_sentences(self, language):
-        """
-
-        :param language:
-        :return:
-        """
-        merged = list()
-        for gender in self.genders:
-            sentences = open(os.path.join(self.corpus_folder, f'{language}_{gender}.balanced.txt')).readlines()
-            merged.extend(sentences)
-
-        return merged
+        self.dd = DataDriver(corpus_folder, save_dir=save_dir or corpus_folder, languages=languages, genders=genders)
 
     def generate_indices(self, size):
         indices = set(range(size))
@@ -107,8 +68,8 @@ class MFTDatasetGenerator:
         :return:
         """
         for n, language in enumerate(self.languages):
-            bio_corpus = self.merge_gender_sentences(language)
-            orig_corpus = self.load_original_corpus(language)
+            bio_corpus = self.dd.generate_biographies_corpus(language)
+            orig_corpus = self.dd.load_europarl_corpus(language)
             if n == 0:
                 orig_idx, orig_subset = list(zip(*random.sample(list(enumerate(orig_corpus)), len(bio_corpus))))
             else:
@@ -119,42 +80,3 @@ class MFTDatasetGenerator:
         sentence_pairs = tuple(self.datasets.items())
         # split into train, test and dev
         self.split_dataset(sentence_pairs)
-
-    def generate_biograpies_corpus(self):
-        for language in self.languages:
-            bio_corpus = self.merge_gender_sentences(language)
-            with open(os.path.join(self.corpus_folder, f'balanced.corpus.tc.{language}'), 'w+') as f:
-                f.writelines(bio_corpus)
-
-
-def retrieve_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-f,""--corpus_folder", dest='corpus_folder', help="paths to corpus data", default='data/')
-    parser.add_argument("-l", "--languages", dest='languages', nargs='+', help="white-spaced languages you want to process the data on")
-    parser.add_argument("--repeat", dest='repeat_in_domain')
-
-    return parser.parse_args()
-
-
-def main():
-    args = retrieve_args()
-    dg = MFTDatasetGenerator(args.corpus_folder)
-    # for language in dg.languages:
-    #     dg.datasets[language] = dg.load_balanced_corpus(language)
-    #
-    # sentence_pairs = tuple(dg.datasets.items())
-    #
-    # # split into train, test and dev
-    # dg.split_dataset(sentence_pairs)
-    for n, language in enumerate(dg.languages):
-        bio_corpus = dg.merge_gender_sentences(language)
-        orig_corpus = dg.load_original_corpus(language)
-        dg.datasets[language] = bio_corpus + orig_corpus
-
-    sentence_pairs = tuple(dg.datasets.items())
-    # split into train, test and dev
-    dg.split_dataset(sentence_pairs)
-
-
-if __name__ == '__main__':
-    main()

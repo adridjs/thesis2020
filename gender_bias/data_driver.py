@@ -1,8 +1,8 @@
-import argparse
 import random
 import re
 from collections import defaultdict
 import sys
+import os
 
 import spacy
 
@@ -65,13 +65,13 @@ class DataDriver:
                 out_filename = f'{self.save_dir}/{key}.balanced.{format}'
                 yield key, filename, out_filename
 
-    def _parse_biographies(self, format='xml'):
+    def _get_biographies_corpus(self, format='xml'):
         """
         Get the documents for each lang-gender key and return them together with the key that has the least documents
         :return: The documents as a dictionary and the key with least documents along with its value as a tuple
         :rtype: dict[str, list], tuple[str, int]
         """
-        docs = defaultdict(list)
+        biographies = defaultdict(list)
         least_docs_key = (None, 10 ** 6)
         for lang in self.languages:
             nlp_model = self._load_model(language=lang)
@@ -83,49 +83,40 @@ class DataDriver:
                         lines = ' '.join(f.readlines())
                         for n, doc in enumerate(re.finditer(self.re.doc_wise, lines, re.UNICODE)):
                             name, sentence = doc.groups()
-                            docs[key].append([token.text for token in nlp_model(sentence)])
+                            biographies[key].append([token.text for token in nlp_model(sentence)])
                     else:
-                        docs[key] = f.readlines()
+                        biographies[key] = f.readlines()
 
-                    n_docs = len(docs[key])
+                    n_docs = len(biographies[key])
                     if n_docs < least_docs_key[1]:
                         least_docs_key = (gender, n_docs)
 
-        return docs, least_docs_key
+        return biographies, least_docs_key
 
-    def _balance_dataset(self, docs, least_docs_value, seed=15):
+    def _get_balanced_corpus(self, sentences, max_sentences, seed=15):
         """
-        Balances a dataset composed by :param docs by randomly deleting samples from a given key until it is equal to :param least_docs_value
-        :param docs: Documents in the data set
-        :type docs: dict[str, list]
-        :param least_docs_value: least number of documents in the whole data set
+        Balances a dataset composed by :param sentences by randomly deleting samples from a given key until it is equal to :param max_sentences
+        :param sentences: sentences in the data set
+        :type sentences: dict[str, list]
+        :param max_sentences: least number of documents in the whole data set
         :type
         """
         random.seed(seed)
-        self.balanced_dataset = defaultdict(list)
+        balanced_dataset = defaultdict(list)
         for lang in self.languages:
             for gender in GENDERS:
                 key = f'{lang}_{gender}'
-                length = len(docs[key])
-                n_delete = length - least_docs_value
-                if n_delete != 0:
+                length = len(sentences[key])
+                n_delete = length - max_sentences
+                if n_delete <= 0:
                     print(f'Number of docs for gender: {gender} in language: {lang} -> {length}. Randomly deleting {n_delete} '
                           f'documents to have a uniform distribution between genders')
-                    sample = random.sample(docs[key], least_docs_value)  # For reproducibility purpose
-                    self.balanced_dataset[key] = sample
+                    sample = random.sample(sentences[key], max_sentences)  # For reproducibility purpose
+                    balanced_dataset[key] = sample
                 else:
-                    self.balanced_dataset[key] = docs[key]
+                    balanced_dataset[key] = sentences[key]
 
-    def get_balanced_dataset(self):
-        """
-        Retrieves documents matching the :param languages and :param genders key sets.
-        """
-        # Get docs to quantify how many he/she instances exist in each language.
-        docs, (least_docs_key, least_docs_value) = self._parse_biographies(format='txt')
-        print(f'Key with least documents ({least_docs_value}): {least_docs_key}')
-
-        # Balance dataset based on least_docs_val.
-        self._balance_dataset(docs, least_docs_value=least_docs_value)
+        return balanced_dataset
 
     def save_sentences(self, format='xml'):
         """
@@ -133,21 +124,16 @@ class DataDriver:
         Each sublist is a sentence.
         :return:
         """
-        if not self.balanced_dataset:
-            for key, filename, out_filename in self._get_gender_filenames(format=format):
-                lang, gender = key
-                gender = gender.split('.')[0]
-                with open(out_filename, 'w+') as out_file:
-                    sentences_by_person = self.process_file(filename)
-                    for name, sentences in sentences_by_person.items():
-                        if format == 'txt':
-                            out_file.write('\n'.join(sentences))
-                        elif format == 'xml':
-                            save_xml(out_file, name, sentences, lang, gender)
-        else:
-            for key, sentences in self.balanced_dataset.items():
-                with open(f'{self.save_dir}/{key}.balanced.{format}', 'w+') as out_file:
-                    out_file.writelines(sentences)
+        for key, filename, out_filename in self._get_gender_filenames(format=format):
+            lang, gender = key
+            gender = gender.split('.')[0]
+            with open(out_filename, 'w+') as out_file:
+                sentences_by_person = self.process_file(filename)
+                for name, sentences in sentences_by_person.items():
+                    if format == 'txt':
+                        out_file.write('\n'.join(sentences))
+                    elif format == 'xml':
+                        save_xml(out_file, name, sentences, lang, gender)
 
     def process_file(self, filename):
         sentences_by_person = defaultdict(list)
@@ -159,29 +145,55 @@ class DataDriver:
 
         return sentences_by_person
 
+    def load_biographies_corpus(self, language):
+        """
 
-def retrieve_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-f,""--corpus_folder", dest='corpus_folder', help="paths to corpus data",
-                        default='../gebiotoolkit/corpus_alignment/aligned')
-    parser.add_argument("-s,""--save_dir", dest='save_dir', help="paths where the generated dataset will be saved",
-                        default='../translation/domain_adaptation/data')
-    parser.add_argument("-l", "--languages", dest='languages', nargs='+', help="white-spaced languages you want to process the data on")
+        :param language:
+        :return:
+        """
+        fn = os.path.join(self.corpus_folder, f'biographies.corpus.tc.{language}')
+        return open(fn).readlines()
 
-    return parser.parse_args()
+    def generate_biographies_corpus(self, language):
+        """
 
+        :param language:
+        :return:
+        """
+        merged_genders = list()
+        for gender in self.genders:
+            sentences = open(os.path.join(self.corpus_folder, f'{language}_{gender}.balanced.txt')).readlines()
+            merged_genders.extend(sentences)
 
-def main():
-    args = retrieve_args()
+        return merged_genders
 
-    corpus_folder = args.corpus_folder
-    save_dir = args.save_dir
-    languages = args.languages
-    dd = DataDriver(corpus_folder, save_dir, languages=languages)
-    dd.get_balanced_dataset()
-    # Generate files *.filtered.txt
-    dd.save_sentences(format='txt')
+    def load_balanced_corpus(self, language):
+        """
 
+        :param language:
+        :return:
+        """
+        fn = os.path.join(self.corpus_folder, f'balanced.corpus.tc.{language}')
+        return open(fn).readlines()
 
-if __name__ == '__main__':
-    main()
+    def generate_balanced_corpus(self):
+        """
+        Generates a balanced dataset between the :param languages and :param genders key sets.
+        """
+        # Get docs to quantify how many he/she instances exist in each language.
+        docs, (least_docs_key, least_docs_value) = self._get_biographies_corpus(format='txt')
+        print(f'Key with least documents ({least_docs_value}): {least_docs_key}')
+
+        # Balance dataset based on least_docs_val.
+        balanced_dataset = self._get_balanced_corpus(docs, max_sentences=least_docs_value)
+
+        return balanced_dataset
+
+    def load_europarl_corpus(self, language):
+        """
+
+        :param language:
+        :return:
+        """
+        fn = os.path.join(self.corpus_folder, f'corpus.clean.{language}')
+        return open(fn).readlines()
