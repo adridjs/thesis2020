@@ -23,8 +23,8 @@ class CBOW(nn.Module):
         return log_probs
 
 
-def train(model):
-    for epoch in range(10):
+def train(model, n_epochs=10):
+    for epoch in range(n_epochs):
         total_loss = 0
         losses = []
         for context, target in model.ngrams:
@@ -45,10 +45,11 @@ def train(model):
 
 if __name__ == '__main__':
     lr = 10e-3
+    n_epochs = 20
     model = CBOW(len([]), embedding_dim=512, context_size=5)
     loss_function = nn.NLLLoss()
     optimizer = optim.SGD(model.parameters(), lr=lr)
-    train(model)
+    train(model, n_epochs=n_epochs)
 
     # TODO: argparser
 

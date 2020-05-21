@@ -7,8 +7,8 @@ import os
 import spacy
 
 sys.path.append(".")
-from gender_bias.utils.constants import GENDERS, LANGUAGES, NLP_MODELS
-from gender_bias.utils.regexp import RegExp
+from utils import GENDERS, LANGUAGES, NLP_MODELS
+from utils import RegExp
 from gebiotoolkit.storage_modules.file_restructure import parse_sentence, save_xml
 
 
@@ -31,10 +31,17 @@ class DataDriver:
         self.nlp_model_mapping = NLP_MODELS
 
     @staticmethod
-    def _clean_sentence(txt):
+    def _remove_anchor_tag(txt):
         pattern = r'<(a|/a).*?>'
-        result = re.sub(pattern, "", txt)
-        return result
+        return re.sub(pattern, "", txt).strip()
+
+    def _clean_sentence(self, txt):
+        try:
+            split = txt.strip().split(':')
+            result = self._remove_anchor_tag(split)
+            return result
+        except (ValueError, IndexError):
+            print(f'Error when splitting sentence by ":" {split}')
 
     def _load_model(self, language):
         """
@@ -74,18 +81,22 @@ class DataDriver:
         biographies = defaultdict(list)
         least_docs_key = (None, 10 ** 6)
         for lang in self.languages:
-            nlp_model = self._load_model(language=lang)
+            # nlp_model = self._load_model(language=lang)
             for gender in self.genders:
                 key = f'{lang}_{gender}'
-                filename = f'{self.corpus_folder}/{key}.filtered.{format}'
+                filename = f'{self.corpus_folder}/{key}.{format}'
                 with open(filename, 'r') as f:
                     if format == 'xml':
                         lines = ' '.join(f.readlines())
                         for n, doc in enumerate(re.finditer(self.re.doc_wise, lines, re.UNICODE)):
                             name, sentence = doc.groups()
-                            biographies[key].append([token.text for token in nlp_model(sentence)])
+                            biographies[key].append(self._remove_anchor_tag(sentence))
                     else:
-                        biographies[key] = f.readlines()
+                        biographies[key] = []
+                        sentences = list(map(str.strip, open(os.path.join(self.corpus_folder, f'{key}.txt')).readlines()))
+                        for sentence in sentences:
+                            if sentence:
+                                biographies[key].append(self._clean_sentence(sentence))
 
                     n_docs = len(biographies[key])
                     if n_docs < least_docs_key[1]:
@@ -93,7 +104,7 @@ class DataDriver:
 
         return biographies, least_docs_key
 
-    def _get_balanced_corpus(self, sentences, max_sentences, seed=15):
+    def _get_balanced_corpus(self, sentences,  language,  max_sentences, seed=15):
         """
         Balances a dataset composed by :param sentences by randomly deleting samples from a given key until it is equal to :param max_sentences
         :param sentences: sentences in the data set
@@ -102,19 +113,18 @@ class DataDriver:
         :type
         """
         random.seed(seed)
-        balanced_dataset = defaultdict(list)
-        for lang in self.languages:
-            for gender in GENDERS:
-                key = f'{lang}_{gender}'
-                length = len(sentences[key])
-                n_delete = length - max_sentences
-                if n_delete <= 0:
-                    print(f'Number of docs for gender: {gender} in language: {lang} -> {length}. Randomly deleting {n_delete} '
-                          f'documents to have a uniform distribution between genders')
-                    sample = random.sample(sentences[key], max_sentences)  # For reproducibility purpose
-                    balanced_dataset[key] = sample
-                else:
-                    balanced_dataset[key] = sentences[key]
+        balanced_dataset = list()
+        for gender in GENDERS:
+            key = f'{language}_{gender}'
+            length = len(sentences[key])
+            n_delete = length - max_sentences
+            if n_delete > 0:
+                print(f'Number of docs for gender: {gender} in language: {language} -> {length}. Randomly deleting {n_delete} '
+                      f'documents to have a uniform distribution between genders')
+                sample = random.sample(sentences[key], max_sentences)  # For reproducibility purpose
+                balanced_dataset.extend(sample)
+            else:
+                balanced_dataset.extend(sentences[key])
 
         return balanced_dataset
 
@@ -140,8 +150,9 @@ class DataDriver:
         for line in open(filename):
             line = line.strip().lower()
             sentence, name = parse_sentence(line)
-            cleaned_sentence = self._clean_sentence(sentence)
-            sentences_by_person[name].append(cleaned_sentence)
+            if sentence:
+                cleaned_sentence = self._clean_sentence(sentence)
+                sentences_by_person[name].append(cleaned_sentence)
 
         return sentences_by_person
 
@@ -162,8 +173,14 @@ class DataDriver:
         """
         merged_genders = list()
         for gender in self.genders:
-            sentences = open(os.path.join(self.corpus_folder, f'{language}_{gender}.balanced.txt')).readlines()
-            merged_genders.extend(sentences)
+            sentences = list(map(str.strip, open(os.path.join(self.corpus_folder, f'{language}_{gender}.txt')).readlines()))
+            sentences_without_name = list()
+            for sentence in sentences:
+                if sentence:
+                    clean_sent = self._clean_sentence(sentence)
+                    sentences_without_name.append(clean_sent)
+
+            merged_genders.extend(sentences_without_name)
 
         return merged_genders
 
@@ -185,9 +202,10 @@ class DataDriver:
         print(f'Key with least documents ({least_docs_value}): {least_docs_key}')
 
         # Balance dataset based on least_docs_val.
-        balanced_dataset = self._get_balanced_corpus(docs, max_sentences=least_docs_value)
-
-        return balanced_dataset
+        for language in self.languages:
+            balanced_dataset = self._get_balanced_corpus(docs, language, max_sentences=least_docs_value)
+            with open(os.path.join(self.save_dir, f'balanced.corpus.tc.{language}'), 'w+') as f:
+                f.writelines("\n".join(balanced_dataset))
 
     def load_europarl_corpus(self, language):
         """
@@ -195,5 +213,5 @@ class DataDriver:
         :param language:
         :return:
         """
-        fn = os.path.join(self.corpus_folder, f'corpus.clean.{language}')
+        fn = os.path.join(self.corpus_folder, f'EuroParl.corpus.tc.{language}')
         return open(fn).readlines()
