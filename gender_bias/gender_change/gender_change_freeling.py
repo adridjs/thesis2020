@@ -3,7 +3,7 @@ import os
 import pyfreeling
 import sys
 
-from gender_bias.data_driver import DataDriver
+from gender_bias.DataDriver import DataDriver
 
 
 def print_tree(ptree, depth):
@@ -145,7 +145,7 @@ def main():
             analyze_sentence(line, tokenizer, splitter, sess_id, morph_analyzer, tagger, sense_annotator, parser, dependencies)
     else:
         dd = DataDriver('../gender_bias/biographies/', languages={'es'})
-        docs, _ = dd._get_biographies_corpus()
+        docs, _ = dd.get_biographies_corpus()
         sentences_list = docs['es_he']
         # for line in open(args.file).readlines():
         for sentence in sentences_list:

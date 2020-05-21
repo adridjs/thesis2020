@@ -4,7 +4,7 @@ from bokeh.models import ColumnDataSource, HoverTool, LabelSet, WheelPanTool, Wh
 from scipy.stats import pearsonr
 
 
-from gender_bias.embeddings import Embeddings
+from gender_bias.analysis.Embeddings import Embeddings
 
 
 class Analysis:

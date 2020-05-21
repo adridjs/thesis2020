@@ -4,7 +4,7 @@ import logging
 import json
 from _collections import defaultdict
 
-from gender_bias.data_driver import DataDriver
+from gender_bias.DataDriver import DataDriver
 from utils import NLP_MODELS
 
 logging.basicConfig(filename='gender_change.log',level=logging.DEBUG)
@@ -166,8 +166,8 @@ def main():
     lookup_fn = '/home/johndoe/.envs/thesis/lib/python3.6/site-packages/spacy_lookups_data/data/'
     l2w = get_lemma2words(lookup_fn, languages)
     dd = DataDriver('../gender_bias/biographies', languages=languages)
-    docs, _ = dd._get_biographies_corpus()
-    dd._get_balanced_corpus()
+    docs, _ = dd.get_biographies_corpus()
+    dd.get_balanced_corpus()
     gi_docs = get_gender_inverted_docs(docs, l2w)
     for lang_gender, docs in gi_docs.items():
         with open(f'{lang_gender}.inverted.txt', 'w+') as f:
