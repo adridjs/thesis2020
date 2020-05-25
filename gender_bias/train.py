@@ -6,7 +6,7 @@ from gender_bias.Word2Vec import Word2VecTrainer
 def retrieve_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-cp", "--corpus-folder", dest='corpus_folder',
-                        default='../translation/data',
+                        default='../translation/corpus',
                         help="path to the folder containing corpus")
     parser.add_argument("-l", "--language", dest='language',
                         default='en',

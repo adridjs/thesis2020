@@ -6,14 +6,14 @@ from translation.CorpusGenerator import CorpusGenerator
 def retrieve_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--corpus_dir", dest='corpus_dir',
-                        default='data/',
-                        help="paths to corpus data")
+                        default='corpus/',
+                        help="paths to corpus corpus")
     parser.add_argument("-s", "--save_dir", dest='save_dir',
                         default='partitions/',
                         help="directory where files will be saved")
     parser.add_argument("-l", "--languages", dest='languages',
                         nargs='+',
-                        help="white-spaced languages you want to process the data on")
+                        help="white-spaced languages you want to process the corpus on")
     parser.add_argument("--corpus", dest='corpus',
                         default='balanced',
                         help="corpus name to load")

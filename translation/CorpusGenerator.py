@@ -98,16 +98,33 @@ class CorpusGenerator:
             with open(os.path.join(self.dd.save_dir, f'balanced.corpus.tc.{language}'), 'w+') as f:
                 f.writelines("\n".join(balanced_dataset))
 
+    def _generate_gebiocorpus_v2(self):
+        for language in self.dd.languages:
+            gebiocorpus = self.dd.get_gebiocorpus_v2(language)
+            with open(os.path.join(self.dd.save_dir, f'gebio.corpus.tc.{language}'), 'w+') as f:
+                f.writelines("\n".join(gebiocorpus))
+
+    def _generate_mixed_corpus(self):
+        """
+        Generates a mixed corpus between EuroParl and biographies balanced by gender between the :param languages and :param genders key sets.
+        """
+        mixed_corpus = self.dd.load_corpus('mixed')
+        for language in self.dd.languages:
+            with open(os.path.join(self.dd.save_dir, f'mixed.corpus.tc.{language}'), 'w+') as f:
+                f.writelines(mixed_corpus[language])
+
     def generate_corpus(self, corpus):
         if corpus != 'europarl' and corpus not in self.supported_corpus:
             raise ValueError(f'Supported corpus names are: {self.supported_corpus}')
 
         if corpus == 'biographies':
-                self._generate_biographies_corpus()
+            self._generate_biographies_corpus()
         elif corpus == 'balanced':
             self._generate_gender_balanced_corpus()
         elif corpus == 'mixed':
-            pass
+            self._generate_mixed_corpus()
+        elif corpus == 'gebio':
+            self._generate_gebiocorpus_v2()
 
     def generate_partitions(self, corpus):
         if corpus not in self.supported_corpus:

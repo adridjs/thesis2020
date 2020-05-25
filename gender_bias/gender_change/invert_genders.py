@@ -163,7 +163,7 @@ def get_replace_words_mapping(words_to_replace, language, lemma2words):
 def main():
     args = retrieve_args()
     languages = {'es'}
-    lookup_fn = '/home/johndoe/.envs/thesis/lib/python3.6/site-packages/spacy_lookups_data/data/'
+    lookup_fn = '/home/johndoe/.envs/thesis/lib/python3.6/site-packages/spacy_lookups_data/corpus/'
     l2w = get_lemma2words(lookup_fn, languages)
     dd = DataDriver('../gender_bias/biographies', languages=languages)
     docs, _ = dd.get_biographies_corpus()

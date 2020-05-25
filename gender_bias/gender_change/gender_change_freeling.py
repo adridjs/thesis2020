@@ -87,7 +87,7 @@ def retrieve_args():
 
 def main():
     args = retrieve_args()
-    # check whether we know where to find FreeLing data files
+    # check whether we know where to find FreeLing corpus files
     if "FREELINGDIR" not in os.environ:
         if sys.platform == "win32" or sys.platform == "win64":
             os.environ["FREELINGDIR"] = "C:\\Program Files"
@@ -108,7 +108,7 @@ def main():
     # Init locales
     pyfreeling.util_init_locale("default")
 
-    # create options set for maco analyzer. Default values are Ok, except for data files.
+    # create options set for maco analyzer. Default values are Ok, except for corpus files.
     LANG = "es"
     op = pyfreeling.maco_options(LANG)
     op.set_data_files("",

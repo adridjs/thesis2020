@@ -13,14 +13,14 @@ class DataDriver:
     :param corpus_folder: Path to the folder where the aligned corpus is stored
     :type corpus_folder: str
     :param
-    :param languages: Languages from which to extract data from :param corpus_folder:
+    :param languages: Languages from which to extract corpus from :param corpus_folder:
     :type languages: set
-    :param genders: Genders from which to extract data from :param corpus_folder:
+    :param genders: Genders from which to extract corpus from :param corpus_folder:
     :type genders: set
     """
     def __init__(self, corpus_folder, save_dir, languages=None, genders=None):
         self.corpus_folder = corpus_folder
-        self.save_dir= save_dir
+        self.save_dir = save_dir
         self.languages = languages or LANGUAGES
         self.genders = genders or GENDERS
         self.re = RegExp()
@@ -52,7 +52,7 @@ class DataDriver:
                 out_filename = f'{self.save_dir}/{key}.balanced.{format}'
                 yield key, filename, out_filename
 
-    def get_biographies_corpus(self, format='xml'):
+    def get_biographies_corpus(self, format='xml', filename=None):
         """
         Get the documents for each lang-gender key and return them together with the key that has the least documents
         :return: The documents as a dictionary and the key with least documents along with its value as a tuple
@@ -64,7 +64,7 @@ class DataDriver:
             # nlp_model = self._load_model(language=lang)
             for gender in self.genders:
                 key = f'{lang}_{gender}'
-                filename = f'{self.corpus_folder}/{key}.{format}'
+                filename = filename or f'{self.corpus_folder}/{key}.{format}'
                 with open(filename, 'r') as f:
                     if format == 'xml':
                         lines = ' '.join(f.readlines())
@@ -87,9 +87,9 @@ class DataDriver:
     def get_balanced_corpus(self, sentences, language, max_sentences, seed=15):
         """
         Balances a dataset composed by :param sentences by randomly deleting samples from a given key until it is equal to :param max_sentences
-        :param sentences: sentences in the data set
+        :param sentences: sentences in the corpus set
         :type sentences: dict[str, list]
-        :param max_sentences: least number of documents in the whole data set
+        :param max_sentences: least number of documents in the whole corpus set
         :type
         """
         random.seed(seed)
@@ -107,6 +107,17 @@ class DataDriver:
                 balanced_dataset.extend(sentences[key])
 
         return balanced_dataset
+    
+    def get_gebiocorpus_v2(self, language):
+        gebiocorpus = []
+        for gender in self.genders:
+            filename = f'{gender}.1000.doc.{language}'
+            with open(filename, 'r') as f:
+                lines = ' '.join(f.readlines())
+                for n, doc in enumerate(re.finditer(self.re.doc_wise, lines, re.UNICODE)):
+                    name, sentence = doc.groups()
+                    gebiocorpus.append(self._remove_anchor_tag(sentence))
+        return gebiocorpus
 
     def save_sentences(self, format='xml'):
         """
