@@ -1,11 +1,9 @@
-import spacy
 import re
 import logging
 import json
 from _collections import defaultdict
 
-from gender_bias.DataDriver import DataDriver
-from utils import NLP_MODELS
+from gender_bias.data_driver import DataDriver
 
 logging.basicConfig(filename='gender_change.log',level=logging.DEBUG)
 
@@ -163,7 +161,7 @@ def get_replace_words_mapping(words_to_replace, language, lemma2words):
 def main():
     args = retrieve_args()
     languages = {'es'}
-    lookup_fn = '/home/johndoe/.envs/thesis/lib/python3.6/site-packages/spacy_lookups_data/corpus/'
+    lookup_fn = '/home/johndoe/.envs/thesis/lib/python3.6/site-packages/spacy_lookups_data/corpus_name/'
     l2w = get_lemma2words(lookup_fn, languages)
     dd = DataDriver('../gender_bias/biographies', languages=languages)
     docs, _ = dd.get_biographies_corpus()

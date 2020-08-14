@@ -1,0 +1,8 @@
+INFO:root:
+
+
+
+
+Corpus: word2vec
+INFO:root:Number of professions in vocabulary: 138
+INFO:gensim.models.keyedvectors:precomputing L2-norms of word weight vectors

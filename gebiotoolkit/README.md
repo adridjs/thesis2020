@@ -16,8 +16,7 @@ While our toolkit is able to customize the languages for which we are extracting
 _Change domain_
 
 To generate files with sentences from the desired domain, we need to get a list of wikipedia entries. The easiest way to
- achieve this
- is by using the petscan tool (https://petscan.wmflabs.org/). We then execute the following command.
+ achieve this is by using the petscan tool (https://petscan.wmflabs.org/). We then execute the following command.
 
     python3 wp_api_language_search.py -csv new_list.csv 
 
@@ -55,10 +54,7 @@ repository. LASER will normally reside in your home folder, that is,
     -s aligned/ \
     -e $LASER/models/bilstm.93langs.2018-12-26.pt
    
-Number of lines after aligning. Take into account that for each person, there are 3 lines that don't contain
-sentences:
-*  `<doc>` and  `</doc>` (contains document metadata)  
-* `<title>`
+Number of lines after aligning. 
 ```
 ~/thesis2020$ cat gebiotoolkit/corpus_alignment/aligned/en_she.txt | wc -l
 27012

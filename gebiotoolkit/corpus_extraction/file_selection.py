@@ -86,7 +86,7 @@ class FileSelector:
         ax.set_ylabel('Languages', fontsize=28, position=(1.0, 0.5))
         ax.set_xlabel('Wikipedia entries', fontsize=28)
         ax.set_yticklabels(self.acronims[:num_languages])
-        ax.invert_yaxis()  # labels read top-to-bottom
+        ax.invert_yaxis()  # kmeans_labels read top-to-bottom
 
     def generate_table(self):
         f = open("plots/table", "w")

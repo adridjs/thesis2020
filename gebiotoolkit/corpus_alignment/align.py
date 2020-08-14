@@ -128,7 +128,7 @@ def get_names_in_all_languages(corpus_folder, languages):
 def retrieve_args():
     parser = argparse.ArgumentParser(description='Stores sentences of persons appearing in all languages given by --languages command')
     parser.add_argument('-l', '--languages', nargs='+', required=True, help='Languages in which the parallel sentences will be generated')
-    parser.add_argument('-f', '--folder', help='folder where the extracted corpus from wikipedia dumps is located',
+    parser.add_argument('-f', '--folder', help='folder where the extracted corpus_name from wikipedia dumps is located',
                         default='../corpus_extraction/wiki')
     parser.add_argument('-s', '--save_path', required=False, help='Folder where the sentences will be stored', default='aligned/')
     parser.add_argument('-e', '--encoder', required=False, help='path to the LASER encoder',
