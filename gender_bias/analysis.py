@@ -25,8 +25,8 @@ class Analysis:
         self.as_dict = self.embeddings.as_dict()
         self.definitional_pairs = list(map(str.split, map(str.strip, open(f'data/{language}_definitional_pairs.txt').readlines())))
         self.professions = list(map(str.strip, open(f'data/{language}_professions.txt').readlines()))
-        # self.stereo_male_words = list(map(str.strip, open(f'data/{language}_male_words.txt')))
-        # self.stereo_female_words = list(map(str.strip, open(f'data/{language}_female_words.txt')))
+        self.stereo_male_words = list(map(str.strip, open(f'data/500_list_male.txt')))
+        self.stereo_female_words = list(map(str.strip, open(f'data/500_list_female.txt')))
         self.profession_embeddings = {token: emb for token, emb in self.as_dict.items() if token in self.professions}
         logging.basicConfig(filename=self.corpus + '.log',
                             filemode='w',
@@ -208,11 +208,14 @@ class Analysis:
         return masc_biased, fem_biased
 
     def compute_direct_bias(self, gender_direction):
-        prof_embs = [self.as_dict.get(profession) for profession in self.professions]
-        prof_embs_filtered = list(map(lambda v: v.reshape(1, -1), filter(lambda x: x is not None, prof_embs)))
-        cos_sims = [abs(cosine_similarity(prof_emb, gender_direction)) for prof_emb in prof_embs_filtered]
-        print(f'Direct Bias ({self.corpus}: {sum(cos_sims)/len(prof_embs_filtered)}')
-        print(f'N: {len(prof_embs_filtered)}')
+        prof_embs = {profession: self.as_dict[profession]
+                     for profession in self.professions if profession in self.as_dict}
+        f = open(f'data/{self.corpus}-pca_professions.txt', 'w+')
+        f.writelines('\n'.join(prof_embs.keys()))
+        cos_sims = [abs(cosine_similarity(prof_emb.reshape(1, -1), gender_direction))
+                    for prof_emb in prof_embs.values()]
+        print(f'Direct Bias ({self.corpus}: {sum(cos_sims)/len(prof_embs.keys())}')
+        print(f'N: {len(prof_embs.keys())}')
 
     def plot_pca(self):
         fig, (ax1, ax2) = plt.subplots(1, 2, sharey='row', figsize=(20, 10))
