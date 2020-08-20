@@ -19,7 +19,8 @@ def retrieve_args():
 def main():
     args = retrieve_args()
     dg = CorpusGenerator(args.corpus_folder, args.save_dir, languages=args.languages)
-    dg.generate_corpus(args.corpus_name, ratio=0.05)
+    # dg.generate_corpus(args.corpus_name)
+    dg.generate_corpus('balanced')
 
 
 if __name__ == '__main__':

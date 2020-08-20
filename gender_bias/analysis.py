@@ -9,6 +9,7 @@ from bokeh.models import ColumnDataSource, HoverTool, LabelSet, PanTool, \
     BoxZoomTool, ResetTool
 from scipy.stats import pearsonr
 from sklearn.decomposition import PCA
+from sklearn.metrics.pairwise import cosine_similarity
 import random
 
 from gender_bias.embeddings import Embeddings
@@ -24,8 +25,8 @@ class Analysis:
         self.as_dict = self.embeddings.as_dict()
         self.definitional_pairs = list(map(str.split, map(str.strip, open(f'data/{language}_definitional_pairs.txt').readlines())))
         self.professions = list(map(str.strip, open(f'data/{language}_professions.txt').readlines()))
-        self.stereo_male_words = list(map(str.strip, open(f'data/{language}_male_words.txt')))
-        self.stereo_female_words = list(map(str.strip, open(f'data/{language}_female_words.txt')))
+        # self.stereo_male_words = list(map(str.strip, open(f'data/{language}_male_words.txt')))
+        # self.stereo_female_words = list(map(str.strip, open(f'data/{language}_female_words.txt')))
         self.profession_embeddings = {token: emb for token, emb in self.as_dict.items() if token in self.professions}
         logging.basicConfig(filename=self.corpus + '.log',
                             filemode='w',
@@ -205,29 +206,41 @@ class Analysis:
 
         return masc_biased, fem_biased
 
+    def compute_direct_bias(self, gender_direction):
+        prof_embs = [self.as_dict.get(profession) for profession in self.professions]
+        prof_embs_filtered = list(map(lambda v: v.reshape(1, -1), filter(lambda x: x is not None, prof_embs)))
+        cos_sims = [abs(cosine_similarity(prof_emb, gender_direction)) for prof_emb in prof_embs_filtered]
+        print(f'Direct Bias ({self.corpus}: {sum(cos_sims)/len(prof_embs_filtered)}')
+        print(f'N: {len(prof_embs_filtered)}')
+
     def plot_pca(self):
-        fig, (ax1, ax2) = plt.subplots(1, 2)
+        fig, (ax1, ax2) = plt.subplots(1, 2, sharey='row', figsize=(20, 10))
         plt.subplots_adjust(wspace=0.5)
         ax1.xlabel = 'PCA 9 components'
         ax1.ylabel = 'Variance Ratio'
         ax2.xlabel = 'Random Dimensions'
         ax2.ylabel = 'Variance_Ratio'
+        ax1.tick_params(labelsize=20)
+        ax2.tick_params(labelsize=20)
         gender_base = list(self._get_gender_base().values())
         pca = PCA()
         model = pca.fit(gender_base)
+        gender_direction = model.components_[0].reshape(1, -1)
+        self.compute_direct_bias(gender_direction)
         n_components = len(model.explained_variance_ratio_)
         ax1.bar(range(1, n_components+1),
-                sorted(model.explained_variance_ratio_, reverse=True),
+                model.explained_variance_ratio_,
                 color='b')
         ax1.set_xticks(range(1, n_components))
         random_base = np.random.rand(9, 128)
         model = pca.fit(random_base)
         n_components = len(model.explained_variance_ratio_)
         ax2.bar(range(1, n_components+1),
-                sorted(model.explained_variance_ratio_, reverse=True),
+                model.explained_variance_ratio_,
                 color='b')
         ax2.set_xticks(range(1, n_components))
-        plt.savefig('PCA comparison.pdf', format='pdf')
+        ax2.tick_params(left=True, labelleft=True)
+        plt.savefig(f'plots/PCA comparison-{self.corpus}.pdf', format='pdf')
         plt.show()
 
     def filter(self, gender_vector, n_neighbors=10, words_to_plot=None):

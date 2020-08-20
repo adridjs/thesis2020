@@ -42,8 +42,9 @@ class CorpusGenerator:
 
                 merged_genders.extend(sentences_without_name)
 
+            biographies = self._remove_gebiocorpus_test_sentences(merged_genders, language)
             with open(os.path.join(self.dd.save_dir, f'biographies.corpus.tc.{language}'), 'w+') as f:
-                f.writelines("\n".join(merged_genders))
+                f.writelines("\n".join(biographies))
 
     def _generate_gender_balanced_corpus(self):
         """
@@ -56,6 +57,7 @@ class CorpusGenerator:
         # Balance corpus based on least_docs_val.
         for language in self.dd.languages:
             balanced_dataset = self.dd.get_balanced_corpus(docs, language, max_sentences=least_docs_value)
+            balanced_dataset = self._remove_gebiocorpus_test_sentences(balanced_dataset, language)
             with open(os.path.join(self.dd.save_dir, f'balanced.corpus.tc.{language}'), 'w+') as f:
                 f.writelines("\n".join(balanced_dataset))
 
@@ -85,6 +87,14 @@ class CorpusGenerator:
         for language in self.dd.languages:
             with open(os.path.join(self.dd.save_dir, f'mixed-{ratio}.corpus.tc.{language}'), 'w+') as f:
                 f.writelines(mixed_corpus[language])
+
+    def _remove_gebiocorpus_test_sentences(self, sentences, language):
+        test_sentences = open(f'/home/johndoe/thesis2020/translation/corpus/gebio.corpus.tc.{language}').readlines()
+        train_sentences = list()
+        for sentence in sentences:
+            if sentence not in test_sentences:
+                train_sentences.append(sentence)
+        return train_sentences
 
     def generate_corpus(self, corpus_name, ratio=1.0):
         """

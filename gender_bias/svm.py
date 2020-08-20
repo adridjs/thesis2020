@@ -30,7 +30,7 @@ class SVM:
     def _split(self, train=None, test=None):
         word_value_label = list(zip(self.clustering.words, self.clustering.values, self.clustering.labels))
         if self.corpus == 'balanced':
-            train_samples = random.sample(word_value_label, 20)
+            train_samples = random.sample(word_value_label, int(len(self.clustering.words)*0.2))
             self.train = {word: (value, label) for word, value, label in train_samples}
             self.test = {word: (value, label) for word, value, label in word_value_label if word not in self.train}
         elif self.corpus == 'EuroParl':
@@ -100,10 +100,10 @@ class SVM:
         return out
 
     def plot_disc(self):
-        X_train = np.array(list(zip(*self.train_values))).reshape(20, 128)
+        X_train = np.array(list(zip(*self.train_values))).reshape(-1, 128)
         self.model.fit(X_train, self.train_labels)
 
-        X_test = np.array(list(zip(*self.test_values))).reshape(61, 128)
+        X_test = np.array(list(zip(*self.test_values))).reshape(-1, 128)
         plt.scatter(X_test[:, 0], X_test[:, 1], c=self.test_labels, s=30, cmap=plt.cm.Paired)
 
         # plot the decision function
@@ -121,9 +121,11 @@ class SVM:
         # ax.contour(XX, YY, Z, colors='k', levels=[-1, 0, 1], alpha=0.5,
         #            linestyles=['--', '-', '--'])
         # plot support vectors
-        ax.scatter(self.model.support_vectors_[:, 0], self.model.support_vectors_[:, 1], s=100,
-                   linewidth=1, facecolors='none', edgecolors='k')
+        # ax.scatter(self.model.support_vectors_[:, 0], self.model.support_vectors_[:, 1], s=100,
+        #            linewidth=1, facecolors='none', edgecolors='k')
+        plt.savefig(f'svm-{self.corpus}.pdf', format='pdf')
         plt.show()
+
 
     def prepare_data(self):
         self.train_values, self.train_labels = list(zip(*self.train.values()))

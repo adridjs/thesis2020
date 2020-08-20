@@ -15,14 +15,20 @@ class Clustering:
         self.n_clusters = n_clusters
         self.as_dict = self.embeddings.as_dict()
         self.professions = list(map(str.strip, open(f'data/{language}_professions.txt').readlines()))
-        self.stereo_male_words = set(map(str.strip, open(f'data/{language}_male_words.txt')))
-        self.stereo_female_words = set(map(str.strip, open(f'data/{language}_female_words.txt')))
+        self.stereo_male_words = set(map(str.strip, open(f'data/5000_list_male.txt')))
+        self.stereo_female_words = set(map(str.strip, open(f'data/5000_list_female.txt')))
         self.word2label = {}
         self.kmeans_word2label = {}
+        self.corpus = corpus
         self.gendered_words = defaultdict(list)
         self.kmeans_labels = None
         self.clusters = None
         self.words = []
+        self.words_to_plot = ['elite', 'fabric', 'enemy', 'command', 'player', 'cornerstone',
+                              'promising', 'marginal','successor', 'remainder', 'predecessor',
+                              'tactical', 'humble', 'fashionable', 'gamble', 'dance', 'philosopher',
+                              'astute', 'culpable', 'hysterical', 'hero', 'genius', 'mercenary', 'legendary', 'prophet', 'feminine',
+                              'prolific', 'sexy', 'ovation', 'thinker', 'charismatic', 'guardianship', 'seductive']
         self.labels = []
 
     def _get_gender(self, word):
@@ -64,23 +70,47 @@ class Clustering:
 
     def _build_cluster_dict(self):
         clusters = defaultdict(list)
-        for word, label in zip(self.as_dict.keys(), self.kmeans_labels):
+        for word, label in zip(self.words, self.kmeans_labels):
             clusters[label].append(word)
             self.kmeans_word2label[word] = label
         self.clusters = clusters
 
-    def build_clusters_plot(self, i):
-        fig = pyplot.figure(i)
+    def _write_log(self, filename):
+        with open(filename, 'w+') as f:
+            for gender, words in self.gendered_words.items():
+                f.write(f'Gender: {gender}\n\t {words}\n')
+
+            items = self.clusters.values()
+            f.write(f'Number of stereotypically-gendered words in embeddings: {sum(len(itm) for itm in list(items))}\n')
+            accuracies = []
+            for label, words in self.clusters.items():
+                intersection_fem = set(words).intersection(self.gendered_words['female'])
+                intersection_masc = set(words).intersection(self.gendered_words['male'])
+                f.writelines(f'Cluster {label}: \n\t {words}\n')
+                female_perc = len(intersection_fem) / len(self.gendered_words["female"]) * 100
+                masc_perc = len(intersection_masc) / len(self.gendered_words["male"]) * 100
+                if len(intersection_fem) > len(intersection_masc):
+                    accuracy = len(intersection_fem)/len(words)
+                    accuracies.append(accuracy)
+                else:
+                    accuracy = len(intersection_masc) / len(words)
+                    accuracies.append(accuracy)
+                f.write(f'\tFeminine Gendered words (%): {female_perc}\n')
+                f.write(f'\tMasculine Gendered words (%): {masc_perc}\n')
+            f.write(f'\tAccuracy (%): {sum(accuracies)/2}')
+
+    def build_clusters_plot(self):
+        fig = pyplot.figure()
         ax = pyplot.axes()
         x, y = self.t_sne()
         label_wise_points = defaultdict(list)
+        f = open(f'data/{self.corpus}-clustering_words.txt', 'w+')
+        f.writelines('\n'.join(self.words))
         for x_point, y_point, label, word in zip(x, y, self.kmeans_labels, self.words):
             label_wise_points[label].append((x_point, y_point, word))
         for label, values in label_wise_points.items():
             x_points, y_points, words = list(zip(*values))
-            ax.scatter(x_points, y_points, label=f'Cluster {label}')
-            for i, (x, y, word) in enumerate(zip(x_points, y_points, words)):
-                if i % 4:
-                    ax.annotate(word, (x + 0.2, y + 0.2))
+            label = 'Female' if label == 0 else 'Male'
+            ax.scatter(x_points, y_points, label=f'{label} cluster')
         pyplot.legend()
         return fig
