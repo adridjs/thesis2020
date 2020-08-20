@@ -232,3 +232,6 @@ DEBUG:matplotlib.backends.backend_pdf:Writing TrueType font.
 INFO:gensim.models.utils_any2vec:loading projection weights from embeddings/EuroParl_l:en_mn:5_w:3_es:128.txt
 DEBUG:smart_open.smart_open_lib:{'transport_params': None, 'ignore_ext': False, 'opener': None, 'closefd': True, 'newline': None, 'errors': None, 'encoding': None, 'buffering': -1, 'mode': 'rb', 'uri': 'embeddings/EuroParl_l:en_mn:5_w:3_es:128.txt'}
 INFO:gensim.models.utils_any2vec:loaded (87033, 128) matrix from embeddings/EuroParl_l:en_mn:5_w:3_es:128.txt
+DEBUG:matplotlib.backends.backend_pdf:Assigning font /b'F1' = '/home/johndoe/.envs/thesis/lib/python3.6/site-packages/matplotlib/mpl-data/fonts/ttf/DejaVuSans.ttf'
+DEBUG:matplotlib.backends.backend_pdf:Embedding font /home/johndoe/.envs/thesis/lib/python3.6/site-packages/matplotlib/mpl-data/fonts/ttf/DejaVuSans.ttf.
+DEBUG:matplotlib.backends.backend_pdf:Writing TrueType font.
