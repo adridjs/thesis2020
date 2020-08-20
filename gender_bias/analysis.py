@@ -182,6 +182,7 @@ class Analysis:
         plt.xticks(indexes + bar_width, labels, rotation='vertical')
         plt.legend(corpus)
         plt.show()
+        plt.savefig(f'plots/gender_stats-{self.corpus}.pdf', format='pdf')
 
     def _get_gender_base(self):
         gender_base = dict()

@@ -28,6 +28,8 @@ class CorpusGenerator:
         """
         Generates Biographies Corpus
         """
+        if not self.dd.save_dir:
+            raise ValueError('Save dir needs to be defined in order to generate a corpus')
         merged_genders = list()
         for language in self.dd.languages:
             for gender in self.dd.genders:

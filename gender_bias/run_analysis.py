@@ -1,7 +1,13 @@
 from gender_bias.analysis import Analysis
+from gender_bias.data_driver import DataDriver
 
 if __name__ == '__main__':
-    analysis_balanced = Analysis('en', corpus='balanced')
-    analysis_balanced.plot_pca()
-    analysis_EP = Analysis('en', corpus='EuroParl')
-    analysis_EP.plot_pca()
+    language = 'en'
+    corpus_folder = '../translation/corpus/'
+    dd = DataDriver(corpus_folder=corpus_folder, languages={'en'})
+    for corpus in ['balanced', 'EuroParl']:
+        sentences = list(map(str.strip, dd.load_corpus(corpus)[language]))
+        analysis = Analysis(language, corpus=corpus)
+        analysis.plot_pca()
+        analysis.print_gender_stats(sentences, corpus)
+        analysis.plot_gendered_vectors_by_pairs(n_neighbors=10, words_to_plot=10)

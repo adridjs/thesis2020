@@ -18,7 +18,7 @@ class DataDriver:
     :param genders: Genders from which to extract corpus_name from :param corpus_folder:
     :type genders: set
     """
-    def __init__(self, corpus_folder, save_dir, languages=None, genders=None):
+    def __init__(self, corpus_folder, save_dir=None, languages=None, genders=None):
         self.corpus_folder = corpus_folder
         self.save_dir = save_dir
         self.languages = languages or LANGUAGES
