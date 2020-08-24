@@ -7,4 +7,4 @@ if __name__ == '__main__':
     dd = DataDriver(corpus_folder=corpus_folder, languages={'en'})
     for corpus in ['balanced', 'EuroParl']:
         analysis = Analysis(language, corpus=corpus)
-        analysis.plot_pca(sample=10)
+        analysis.plot_pca()
