@@ -1,5 +1,1 @@
-# exclude everything
-wikidumps/*
-
-# exception to the rule
-!wikidumps/.gitkeep 
+*

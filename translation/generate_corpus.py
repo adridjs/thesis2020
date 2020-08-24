@@ -1,4 +1,5 @@
 import argparse
+import os
 
 from translation.CorpusGenerator import CorpusGenerator
 
@@ -18,6 +19,10 @@ def retrieve_args():
 
 def main():
     args = retrieve_args()
+    if not os.path.exists(args.corpus_folder):
+        os.mkdir(args.corpus_folder)
+    if not os.path.exists(args.save_dir):
+        os.mkdir(args.save_dir)
     dg = CorpusGenerator(args.corpus_folder, args.save_dir, languages=args.languages)
     # dg.generate_corpus(args.corpus_name)
     dg.generate_corpus('balanced')

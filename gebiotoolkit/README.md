@@ -28,19 +28,7 @@ We can also extract page files by giving a `$NAMELIST_FILE` to the WikiExtractor
     -o $OUTPUT_PATH \
     --filter_category $NAMELIST_FILE \
     -l
-    
-Number of names in english and spanish, respectively.
-```
-cat en_namelist.txt | wc -l
-33604
-cat es_namelist.txt | wc -l
-31373
-```
 
-Number of names that appear in both namelists.
-```
-24675
-```
 ### Corpus Alignment
 In order to align the extracted sentences from Wikipedia, we need 
 to provide a white-spaced list of languages via the `-l` argument; 
@@ -54,14 +42,6 @@ repository. LASER will normally reside in your home folder, that is,
     -s aligned/ \
     -e $LASER/models/bilstm.93langs.2018-12-26.pt
    
-Number of lines after aligning. 
-```
-~/thesis2020$ cat gebiotoolkit/corpus_alignment/aligned/en_she.txt | wc -l
-27012
-~/thesis2020$ cat gebiotoolkit/corpus_alignment/aligned/en_he.txt | wc -l
-47750
-```
-
 ## References
 
 For more information, please check https://arxiv.org/pdf/1912.04778.pdf

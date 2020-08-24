@@ -24,11 +24,6 @@ class Clustering:
         self.kmeans_labels = None
         self.clusters = None
         self.words = []
-        self.words_to_plot = ['elite', 'fabric', 'enemy', 'command', 'player', 'cornerstone',
-                              'promising', 'marginal','successor', 'remainder', 'predecessor',
-                              'tactical', 'humble', 'fashionable', 'gamble', 'dance', 'philosopher',
-                              'astute', 'culpable', 'hysterical', 'hero', 'genius', 'mercenary', 'legendary', 'prophet', 'feminine',
-                              'prolific', 'sexy', 'ovation', 'thinker', 'charismatic', 'guardianship', 'seductive']
         self.labels = []
 
     def _get_gender(self, word):
@@ -44,25 +39,12 @@ class Clustering:
             self.gendered_words['female'].append(word)
             return 'female'
 
-    def select_values(self, filter_words=False):
-        if not filter_words:
-            self.words, self.values = list(zip(*self.as_dict.items()))
-        else:
-            values_to_cluster = list()
-            words = list()
-            for word, emb in self.as_dict.items():
-                if self._get_gender(word):
-                    words.append(word)
-                    values_to_cluster.append(emb)
-            self.words = words
-            self.values = values_to_cluster
-
-    def t_sne(self):
-        self.cluster()
+    def _t_sne(self):
+        self._cluster()
         tsne = TSNE().fit_transform(self.values)
         return list(zip(*list(tsne)))
 
-    def cluster(self, filter_words=True):
+    def _cluster(self, filter_words=True):
         self.select_values(filter_words=filter_words)
         kmeans = KMeans(n_clusters=self.n_clusters).fit(self.values)
         self.kmeans_labels = kmeans.labels_
@@ -102,7 +84,7 @@ class Clustering:
     def build_clusters_plot(self):
         fig = pyplot.figure()
         ax = pyplot.axes()
-        x, y = self.t_sne()
+        x, y = self._t_sne()
         label_wise_points = defaultdict(list)
         f = open(f'data/{self.corpus}-clustering_words.txt', 'w+')
         f.writelines('\n'.join(self.words))
@@ -114,3 +96,16 @@ class Clustering:
             ax.scatter(x_points, y_points, label=f'{label} cluster')
         pyplot.legend()
         return fig
+
+    def select_values(self, filter_words=False):
+        if not filter_words:
+            self.words, self.values = list(zip(*self.as_dict.items()))
+        else:
+            values_to_cluster = list()
+            words = list()
+            for word, emb in self.as_dict.items():
+                if self._get_gender(word):
+                    words.append(word)
+                    values_to_cluster.append(emb)
+            self.words = words
+            self.values = values_to_cluster

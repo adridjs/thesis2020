@@ -1,10 +1,3 @@
-## Translation
-TODO
-
-## Domain Adaptation
-Update the weights of a pretrained transformer model with gender-balanced data, in order to obtain
-a model with no gender bias in the domain space.
-
 ## Corpus Generator
 Utility to generate the different corpus that are going to be analyzed. We will measure its gender bias both in the
  embeddings space after training a word2vec model and after translating sentences on a fairseq model.

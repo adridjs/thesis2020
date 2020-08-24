@@ -1,5 +1,4 @@
 from gender_bias.svm import SVM
-from matplotlib import pyplot as plt
 
 if __name__ == '__main__':
     svm_balanced = SVM(corpus='balanced')

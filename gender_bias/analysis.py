@@ -13,7 +13,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 import random
 
 from gender_bias.embeddings import Embeddings
-from gebiotoolkit.storage_modules.storage_modules import find_pronouns
 
 
 class Analysis:
@@ -31,20 +30,9 @@ class Analysis:
         logging.basicConfig(filename=self.corpus + '.log',
                             filemode='w',
                             level='DEBUG')
-        # logging.info(f'Vocabulary size: {len(self.embeddings.kv.vectors)}')
-        # logging.info(f'Number of professions: {len(self.professions)}')
-        # logging.info(f'Number of professions in vocabulary: {len(self.profession_embeddings)}')
-
-    def plot_gendered_vectors(self, pair, data):
-        """
-
-        :param gendered_vectors:
-        :param pair:
-        :param threshold:
-        :rtype
-        """
-        p = self._build_plot(pair, data)
-        show(p)
+        logging.info(f'Vocabulary size: {len(self.embeddings.kv.vectors)}')
+        logging.info(f'Number of professions: {len(self.professions)}')
+        logging.info(f'Number of professions in vocabulary: {len(self.profession_embeddings)}')
 
     @staticmethod
     def _build_plot(pair, data, save=False):
@@ -75,26 +63,6 @@ class Analysis:
 
         return p
 
-    def analogy(self, a, b, c):
-        """
-        a is to b as c is to ?
-        :return: most similar word to the analogy
-        """
-        result = self.embeddings.kv.most_similar_cosmul(positive=[a, c], negative=[b])
-        logging.info("{}: {:.4f}".format(*result[0]))
-        return result
-
-    def n_neighbors(self, word, n=10):
-        """
-        Gets the top-n most similar neighbors in the embedding space by cosine similarity
-        :param word: Word to search its neighbors
-        :type word: str
-        :param n: number of neighbors to search for
-        :type n: int
-        :rtype: list
-        """
-        return self.embeddings.kv.most_similar(positive=[word], topn=n)
-
     def _get_gender(self, prof):
         if prof in self.stereo_male_words:
             return 'male'
@@ -119,6 +87,72 @@ class Analysis:
                                                       gender_score=len(n_male)/n_neighbors)})
 
         return data
+
+    def _get_gender_base(self):
+        gender_base = dict()
+        for masc, fem in self.definitional_pairs:
+            # gender vector is defined as the masculine vector minus the feminine vector
+            gender_vector = self.as_dict[masc] - self.as_dict[fem]
+            gender_base[(masc, fem)] = gender_vector
+        return gender_base
+
+    @staticmethod
+    def _get_masculine_feminine_biased_words(neighbors_info,
+                                             words_to_plot=None):
+
+        masc_biased = list(sorted(neighbors_info.items(), key=lambda kv: len(kv[1]['n_male']),
+                                  reverse=True))
+        fem_biased = list(sorted(neighbors_info.items(), key=lambda kv: len(kv[1]['n_female']),
+                                 reverse=True))
+        masc_biased = \
+            masc_biased[:words_to_plot] if words_to_plot else masc_biased
+        fem_biased = \
+            fem_biased[:words_to_plot] if words_to_plot else fem_biased
+
+        return masc_biased, fem_biased
+
+    def _compute_direct_bias(self, gender_direction, sample=None):
+        prof_embs = {profession: self.as_dict[profession]
+                     for profession in self.professions if profession in self.as_dict}
+        f = open(f'data/{self.corpus}-pca_professions.txt', 'w+')
+        if sample:
+            keys = random.sample(list(prof_embs), sample)
+            prof_embs = {profession: self.as_dict[profession] for profession in keys}
+
+        f.writelines('\n'.join(prof_embs.keys()))
+        cos_sims = [abs(cosine_similarity(prof_emb.reshape(1, -1), gender_direction))
+                    for prof_emb in prof_embs.values()]
+        print(f'Direct Bias ({self.corpus}: {sum(cos_sims)/len(prof_embs.keys())}')
+        print(f'N: {len(prof_embs.keys())}')
+
+    def _filter(self, gender_vector, n_neighbors=10, words_to_plot=None):
+        eni = self._get_embedding_neighbors_info(gender_vector,
+                                                 n_neighbors=n_neighbors)
+        total = len(eni)
+        eni_filtered = list(
+            filter(lambda kv: kv[1]['gender_score'] != 0, eni.items()))
+        logging.info(f'Number of professions with gender score != 0 in '
+                     f'vocabulary:  {len(eni_filtered), len(eni_filtered) / total}')
+        sorted_cosine = list(sorted(eni.items(),
+                                    key=lambda keyval: abs(keyval[1]['cos_similarity']),
+                                    reverse=True))
+        sorted_cosine = sorted_cosine[:words_to_plot] if words_to_plot else sorted_cosine
+        logging.info('-' * 120)
+        logging.info(f'Gendered words by cosine similarity: \n\t' +
+                     '\n\t'.join(f'{word} {neigh_info["cos_similarity"]}'
+                                 for word, neigh_info in sorted_cosine))
+        return sorted_cosine
+
+    def plot_gendered_vectors(self, pair, data):
+        """
+
+        :param gendered_vectors:
+        :param pair:
+        :param threshold:
+        :rtype
+        """
+        p = self._build_plot(pair, data)
+        show(p)
 
     def plot_gendered_vectors_by_pairs(self, n_neighbors=10, words_to_plot=10):
         """
@@ -146,8 +180,8 @@ class Analysis:
                   '\n'.join(word + '\n\t' + '\n\t'.join(f'{word} {dist}' for word, dist in neigh_info['neighbors'][:5])
                             for word, neigh_info in fem_biased[:5]))
             if self.filter_unbiased:
-                sorted_cosine = self.filter(gender_vector, n_neighbors=n_neighbors,
-                                            words_to_plot=words_to_plot)
+                sorted_cosine = self._filter(gender_vector, n_neighbors=n_neighbors,
+                                             words_to_plot=words_to_plot)
 
                 data = dict(sorted_cosine[:words_to_plot]) if words_to_plot else dict(sorted_cosine)
                 self.plot_gendered_vectors(gender_word_pair, data)
@@ -184,40 +218,7 @@ class Analysis:
         plt.show()
         plt.savefig(f'plots/gender_stats-{self.corpus}.pdf', format='pdf')
 
-    def _get_gender_base(self):
-        gender_base = dict()
-        for masc, fem in self.definitional_pairs:
-            # gender vector is defined as the masculine vector minus the feminine vector
-            gender_vector = self.as_dict[masc] - self.as_dict[fem]
-            gender_base[(masc, fem)] = gender_vector
-        return gender_base
-
-    @staticmethod
-    def _get_masculine_feminine_biased_words(neighbors_info,
-                                             words_to_plot=None):
-
-        masc_biased = list(sorted(neighbors_info.items(), key=lambda kv: len(kv[1]['n_male']),
-                                  reverse=True))
-        fem_biased = list(sorted(neighbors_info.items(), key=lambda kv: len(kv[1]['n_female']),
-                                 reverse=True))
-        masc_biased = \
-            masc_biased[:words_to_plot] if words_to_plot else masc_biased
-        fem_biased = \
-            fem_biased[:words_to_plot] if words_to_plot else fem_biased
-
-        return masc_biased, fem_biased
-
-    def compute_direct_bias(self, gender_direction):
-        prof_embs = {profession: self.as_dict[profession]
-                     for profession in self.professions if profession in self.as_dict}
-        f = open(f'data/{self.corpus}-pca_professions.txt', 'w+')
-        f.writelines('\n'.join(prof_embs.keys()))
-        cos_sims = [abs(cosine_similarity(prof_emb.reshape(1, -1), gender_direction))
-                    for prof_emb in prof_embs.values()]
-        print(f'Direct Bias ({self.corpus}: {sum(cos_sims)/len(prof_embs.keys())}')
-        print(f'N: {len(prof_embs.keys())}')
-
-    def plot_pca(self):
+    def plot_pca(self, sample=None):
         fig, (ax1, ax2) = plt.subplots(1, 2, sharey='row', figsize=(20, 10))
         plt.subplots_adjust(wspace=0.5)
         ax1.xlabel = 'PCA 9 components'
@@ -230,7 +231,7 @@ class Analysis:
         pca = PCA()
         model = pca.fit(gender_base)
         gender_direction = model.components_[0].reshape(1, -1)
-        self.compute_direct_bias(gender_direction)
+        self._compute_direct_bias(gender_direction, sample=sample)
         n_components = len(model.explained_variance_ratio_)
         ax1.bar(range(1, n_components+1),
                 model.explained_variance_ratio_,
@@ -247,20 +248,22 @@ class Analysis:
         plt.savefig(f'plots/PCA comparison-{self.corpus}.pdf', format='pdf')
         plt.show()
 
-    def filter(self, gender_vector, n_neighbors=10, words_to_plot=None):
-        eni = self._get_embedding_neighbors_info(gender_vector,
-                                                 n_neighbors=n_neighbors)
-        total = len(eni)
-        eni_filtered = list(
-            filter(lambda kv: kv[1]['gender_score'] != 0, eni.items()))
-        logging.info(f'Number of professions with gender score != 0 in '
-                     f'vocabulary:  {len(eni_filtered), len(eni_filtered) / total}')
-        sorted_cosine = list(sorted(eni.items(),
-                                    key=lambda keyval: abs(keyval[1]['cos_similarity']),
-                                    reverse=True))
-        sorted_cosine = sorted_cosine[:words_to_plot] if words_to_plot else sorted_cosine
-        logging.info('-' * 120)
-        logging.info(f'Gendered words by cosine similarity: \n\t' +
-                     '\n\t'.join(f'{word} {neigh_info["cos_similarity"]}'
-                                 for word, neigh_info in sorted_cosine))
-        return sorted_cosine
+    def analogy(self, a, b, c):
+        """
+        a is to b as c is to ?
+        :return: most similar word to the analogy
+        """
+        result = self.embeddings.kv.most_similar_cosmul(positive=[a, c], negative=[b])
+        logging.info("{}: {:.4f}".format(*result[0]))
+        return result
+
+    def n_neighbors(self, word, n=10):
+        """
+        Gets the top-n most similar neighbors in the embedding space by cosine similarity
+        :param word: Word to search its neighbors
+        :type word: str
+        :param n: number of neighbors to search for
+        :type n: int
+        :rtype: list
+        """
+        return self.embeddings.kv.most_similar(positive=[word], topn=n)

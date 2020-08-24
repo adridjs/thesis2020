@@ -7,7 +7,4 @@ if __name__ == '__main__':
     dd = DataDriver(corpus_folder=corpus_folder, languages={'en'})
     for corpus in ['balanced', 'EuroParl']:
         analysis = Analysis(language, corpus=corpus)
-        analysis.plot_pca()
-        # sentences = list(map(str.strip, dd.load_corpus(corpus)[language]))
-        # analysis.print_gender_stats(sentences, corpus)
-        # analysis.plot_gendered_vectors_by_pairs(n_neighbors=10, words_to_plot=10)
+        analysis.plot_pca(sample=10)
